@@ -1,0 +1,9 @@
+flask
+pandas
+openpyxl
+flask_cors
+requests
+envparse
+PyPDF2
+flask_weasyprint
+pdf417gen

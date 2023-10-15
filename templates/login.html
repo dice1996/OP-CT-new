@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}PRIJAVA{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="header">
+                    <h2 class="text-center">PRIJAVA</h2>
+                </div>
+
+                <form action="/login" method="post" class="roboto-form">
+                    <div class="form-group">
+                        <label for="username">Korisničko ime:</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Lozinka:</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Prijava</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <style>
+
+        .form-control {
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn {
+            border-radius: 15px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: #1b5949;
+            border: none;
+        }
+
+        .row.justify-content-center {
+            margin: 0;
+        }
+
+        .container {
+            padding: 0;
+        }
+
+    </style>
+{% endblock %}
