@@ -1,0 +1,39 @@
+.offers-window {
+    max-width: 920px;
+    height: 300px;
+    overflow-y: auto;
+    padding: 0px;
+    margin: 0px;
+}
+
+.header-with-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dataTables_filter input {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    margin-left: 10px;
+}
+
+.dataTables_length select {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.dataTables_filter {
+    float: left;
+}
+
+.dataTables_length {
+    float: right;
+}
+
+body {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}

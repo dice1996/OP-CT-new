@@ -2,6 +2,7 @@ import json
 import sqlite3
 from datetime import datetime as dt
 
+
 class Quote:
     def __init__(self, form_data, user, row_id=None):
         self.customer = {
@@ -66,10 +67,25 @@ class Quote:
         return f"{year_str}{month_str}-WEB-{offer_id_str}", f"{year_str}{month_str}-{offer_id_str}"
 
     @staticmethod
-    def get_offers():
+    def get_offers(year=None, month=None):
         con = sqlite3.connect('quotes.db')
         cur = con.cursor()
-        cur.execute('SELECT id, data FROM quotes')
+
+        query = 'SELECT id, data FROM quotes'
+        params = []
+
+        if year or month:
+            query += ' WHERE'
+            if year:
+                query += ' strftime("%Y", data) = ?'
+                params.append(year)
+            if month:
+                if year:
+                    query += ' AND'
+                query += ' strftime("%m", data) = ?'
+                params.append(month)
+
+        cur.execute(query, params)
         rows = cur.fetchall()
         con.close()
 

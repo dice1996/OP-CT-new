@@ -113,18 +113,24 @@
                                 <td class="small-font" style="margin: 0; padding: 0;">{{ customer.oib }}</td>
                             </tr>
                         {% endif %}
-                        <tr style="margin: 0; padding: 0;">
-                            <td class="label-font" style="margin: 0; padding: 0;"><strong>Adresa:</strong></td>
-                            <td class="small-font" style="margin: 0; padding: 0;">{{ customer.address }}</td>
-                        </tr>
-                        <tr style="margin: 0; padding: 0;">
-                            <td class="label-font" style="margin: 0; padding: 0;"><strong>Telefon:</strong></td>
-                            <td class="small-font" style="margin: 0; padding: 0;">{{ customer.phone }}</td>
-                        </tr>
-                        <tr style="margin: 0; padding: 0;">
-                            <td class="label-font" style="margin: 0; padding: 0;"><strong>Email:</strong></td>
-                            <td class="small-font" style="margin: 0; padding: 0;">{{ customer.email }}</td>
-                        </tr>
+                        {% if customer.address %}
+                            <tr style="margin: 0; padding: 0;">
+                                <td class="label-font" style="margin: 0; padding: 0;"><strong>Adresa:</strong></td>
+                                <td class="small-font" style="margin: 0; padding: 0;">{{ customer.address }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if customer.phone %}
+                            <tr style="margin: 0; padding: 0;">
+                                <td class="label-font" style="margin: 0; padding: 0;"><strong>Telefon:</strong></td>
+                                <td class="small-font" style="margin: 0; padding: 0;">{{ customer.phone }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if customer.email %}
+                            <tr style="margin: 0; padding: 0;">
+                                <td class="label-font" style="margin: 0; padding: 0;"><strong>Email:</strong></td>
+                                <td class="small-font" style="margin: 0; padding: 0;">{{ customer.email }}</td>
+                            </tr>
+                        {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -145,12 +151,14 @@
             <table class="table table-bordered">
                 <thead class="label-font">
                 <tr>
-                    <th>Šifra</th>
+                    <th style="text-align: center">Šifra</th>
                     <th>Naziv</th>
-                    <th>Kol.</th>
-                    <th>Cijena</th>
-                    <th>Rabat (%)</th>
-                    <th>Ukupno</th>
+                    <th style="text-align: center; text-anchor: start;">Kol.</th>
+                    <th style="text-align: center;">Cijena
+                        <div class="small-font">(s PDV-om)</div>
+                    </th>
+                    <th style="text-align: center">Rabat (%)</th>
+                    <th style="text-align: center">Ukupno</th>
                 </tr>
                 </thead>
                 <tbody class="small-font">
@@ -182,7 +190,7 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <img src="data:image/png;base64,{{ img_str }}" alt="2D Barcode"
-                                                 style="width: 230px;">
+                                                 style="width: 200px;">
                                             <p class="small-font">*Ponudu je moguće platiti skeniranjem 2D barkoda.</p>
                                         </div>
                                         <div class="col-md-6"></div>
@@ -193,14 +201,14 @@
                                     <table class="table-borderless"
                                            style="border: 0; width: 100%">
                                         <tr>
-                                            <td><h3>Osnovica:</h3></td>
+                                            <td><h3>OSNOVICA:</h3></td>
                                             <td style="text-align: right;"><h3>€{{ "%.2f"|format(total_amount) }}</h3>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td><h3>Rabat:</h3></td>
+                                            <td><h3>RABAT:</h3></td>
                                             <td style="text-align: right;"><h3>
-                                                €{{ "%.2f"|format(discount_amount) }}</h3></td>
+                                                €{{ "%.2f"|format(discount_amount | float * 0.8) }}</h3></td>
                                         </tr>
                                         <tr>
                                             <td><h3>PDV:</h3></td>
@@ -208,9 +216,15 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td><h5>Iznos:</h5></td>
-                                            <td style="text-align: right;"><h5>
-                                                €{{ "%.2f"|format(grand_total_amount) }}</h5></td>
+                                            <td><h3 style="font-weight: bold">IZNOS EUR:</h3></td>
+                                            <td style="text-align: right;"><h3 style="font-weight: bold">
+                                                €{{ "%.2f"|format(grand_total_amount) }} </h3></td>
+                                        </tr>
+                                        <tr>
+                                            <td><h3 style="font-weight: bold">IZNOS HRK:</h3></td>
+                                            <td style="text-align: right;"><h3 style="font-weight: bold">
+                                                {{ "%.2f"|format(grand_total_amount | float * 7.53450 | float) }}</h3>
+                                            </td>
                                         </tr>
                                     </table>
                                 </div>
@@ -224,7 +238,8 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <h3 style="text-underline: #555555">DODATNE NAPOMENE</h3>
-                                    <p>Valjanost ponude je 7 dana od datuma izdavanja. Ponuda je izdana elektronskim
+                                    <p><strong>Fiksni tečaj konverzije: 7,53450</strong><br>Valjanost ponude je 7 dana
+                                        od datuma izdavanja. Ponuda je izdana elektronskim
                                         putem te je valjana bez
                                         potpisa i pečata.</p>
                                     {% if additional.napomena %}
@@ -242,6 +257,5 @@
         </div>
     </div>
 </div>
-
 </body>
 </html>

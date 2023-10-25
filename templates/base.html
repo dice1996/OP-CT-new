@@ -41,7 +41,8 @@
         </ul>
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" style="font-weight: bold; padding: 10px 20px; border-radius: 12px; font-size: 1rem"
+                <a class="nav-link {{ active2 }}"
+                   style="font-weight: bold; padding: 10px 20px; border-radius: 12px; font-size: 1rem"
                    href="{{ url_for('quote') }}">
                     Kreator ponuda
                 </a>
@@ -78,6 +79,9 @@
 </div>
 <div id="additional-js-after">
     {% block additional_js_after %}{% endblock %}
+    <script>window.addEventListener('load', function () {
+        document.body.style.opacity = '1';
+    });</script>
 </div>
 
 {% if session.role == 'admin' %}

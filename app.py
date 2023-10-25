@@ -68,6 +68,7 @@ def login_required(f):
 
 
 @app.route('/logout', methods=['GET'])
+@login_required
 def logout():
     session.pop("user_id")
     session.pop("username")
@@ -119,8 +120,10 @@ def mess():
 @login_required
 def quote():
     if session["role"] == "admin" or session["role"] == "user":
-        offers = Quote.get_offers()
-        return render_template('quote.html', offers=offers)
+        year = request.args.get('year')
+        month = request.args.get('month')
+        offers = Quote.get_offers(year, month)
+        return render_template('quote.html', offers=offers, active2="active", active1="")
     else:
         return render_template("zalihe.html", active2="", active1="active", active3="")
 
@@ -169,6 +172,8 @@ def create_quote():
 
         # Calculate Iznos (Grand Total)
         iznos = round(total_amount_with_tax - discount_amount_with_tax, 2)
+
+        price_wo_pdv = round()
 
         # Convert Grand Total to Eurocents
         eurocents = int(iznos * 100)
@@ -219,6 +224,7 @@ def create_quote():
 
 
 @app.route('/download/<quote_id>')
+@login_required
 def download_pdf(quote_id):
     try:
         data_dict = Quote.get_by_id(quote_id)
@@ -321,12 +327,14 @@ def download_pdf(quote_id):
 
 
 @app.route('/quote/<int:row_id>', methods=['DELETE'])
+@login_required
 def delete_quote(row_id):
     Quote.delete_from_db(row_id)
     return jsonify({"status": "success"}), 200
 
 
 @app.route('/quote/<int:row_id>', methods=['GET'])
+@login_required
 def get_quote(row_id):
     quote = Quote.get_by_id(row_id)  # Assuming get_by_id is a method in your Quote class
     if quote:
@@ -336,6 +344,7 @@ def get_quote(row_id):
 
 
 @app.route('/quote/update', methods=['GET'])
+@login_required
 def update_quote():
     quote = Quote.get_offers()
     if quote:

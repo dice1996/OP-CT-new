@@ -3,114 +3,121 @@
 {% block title %}DOSTUPNOST by Dino Cerjak{% endblock %}
 
 {% block additional_js_before %}
-<script src="/static/js/searchProduct.js"></script>
-<script src="/static/js/highlightProducts.js"></script>
+    <script>
+        window.addEventListener('load', function () {
+            document.body.style.opacity = '1';
+        });
+    </script>
+    <script src="/static/js/searchProduct.js"></script>
+    <script src="/static/js/highlightProducts.js"></script>
 {% endblock %}
 
 {% block additional_js_after %}
-<script src="/static/js/shortcuts.js"></script>
-<script src="/static/js/searchSuggestions.js"></script>
+    <script src="/static/js/shortcuts.js"></script>
+    <script src="/static/js/searchSuggestions.js"></script>
 {% endblock %}
 
 {% block content %}
 
-<div class="justify-content-center">
-    <div class="row justify-content-center">
-        <div class="col-md-10" style="margin: 10px">
-            <!-- Header -->
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <div class="page-header">
-                        <h2>PROVJERA DOSTUPNOSTI</h2>
-                        <p class="lead">Za pretragu je potrebno upisati šifru, barkod ili naziv proizvoda</p>
-                    </div>
-                </div>
-            </div>
-            <!-- Centering the Search and Table -->
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <!-- Product Search with Suggestions -->
-                    <div class="input-group mb-3">
-                        <input class="form-control" id="productQuery" placeholder="Unesi dio naziva ili šifru proizvoda"
-                               type="text"/>
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" style="background-color: #1B5949FF;"
-                                    onclick="searchProduct()">
-                                Pretraga
-                            </button>
+    <div class="justify-content-center">
+        <div class="row justify-content-center">
+            <div class="col-md-10" style="margin: 10px">
+                <!-- Header -->
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <div class="page-header">
+                            <h2>PROVJERA DOSTUPNOSTI</h2>
+                            <p class="lead">Za pretragu je potrebno upisati šifru, barkod ili naziv proizvoda</p>
                         </div>
                     </div>
+                </div>
+                <!-- Centering the Search and Table -->
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <!-- Product Search with Suggestions -->
+                        <div class="input-group mb-3">
+                            <input class="form-control" id="productQuery"
+                                   placeholder="Unesi dio naziva ili šifru proizvoda"
+                                   type="text"/>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" style="background-color: #1B5949FF;"
+                                        onclick="searchProduct()">
+                                    Pretraga
+                                </button>
+                            </div>
+                        </div>
 
-                    <div id="suggestions"></div>
-                    <div id="alertBox"></div>
+                        <div id="suggestions"></div>
+                        <div id="alertBox"></div>
 
-                    <div id="productInfoBox">
-                        <span class="product-info-label">Proizvod:</span> <span id="productNameDisplay"
-                                                                                class="product-info"></span> |
-                        <span class="product-info-label">Šifra:</span> <span id="productCode"
-                                                                             class="product-info"></span> |
-                        <span class="product-info-label">EAN:</span> <span id="productEAN" class="product-info"></span>
+                        <div id="productInfoBox">
+                            <span class="product-info-label">Proizvod:</span> <span id="productNameDisplay"
+                                                                                    class="product-info"></span> |
+                            <span class="product-info-label">Šifra:</span> <span id="productCode"
+                                                                                 class="product-info"></span> |
+                            <span class="product-info-label">EAN:</span> <span id="productEAN"
+                                                                               class="product-info"></span>
+                        </div>
+
+
+                        <!-- Quantities Table -->
+                        <table class="table table-bordered table-hover">
+                            <thead style="background-color: #1b5949; color: white;">
+                            <tr>
+                                <th style="font-weight: 600;">Lokacija</th>
+                                <th style="font-weight: 600;">Dostupna količina</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>VELEPRODAJA</td>
+                                <td id="000 VELEPRODAJA 10700"></td>
+                            </tr>
+                            <tr>
+                                <td>REZERVNI DIJELOVI</td>
+                                <td id="002 REZ. DIJELOVI0700"></td>
+                            </tr>
+                            <tr>
+                                <td>WEBSHOP</td>
+                                <td id="WEB WEB SHOP Skladište0700"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"></td>
+                            </tr> <!-- prazno polje -->
+                            <tr>
+                                <td>CT OSIJEK</td>
+                                <td id="001 CENTAR TEHNIKE 001 OSIJEK0700"></td>
+                            </tr>
+                            <tr>
+                                <td>CT VALPOVO</td>
+                                <td id="002 CENTAR TEHNIKE 002 VALPOVO0700"></td>
+                            </tr>
+                            <tr>
+                                <td>CT ĐAKOVO</td>
+                                <td id="004 CENTAR TEHNIKE 004 ĐAKOVO0700"></td>
+                            </tr>
+                            <tr>
+                                <td>CT NAŠICE</td>
+                                <td id="005 CENTAR TEHNIKE 005 NAŠICE0700"></td>
+                            </tr>
+                            <tr>
+                                <td>CT SLAVONSKI BROD</td>
+                                <td id="006 CENTAR TEHNIKE 006 SLAVONSKI BROD0700"></td>
+                            </tr>
+                            <tr>
+                                <td>CT BELI MANASTIR</td>
+                                <td id="008 CENTAR TEHNIKE 008 BELI MANASTIR0700"></td>
+                            </tr>
+                            <tr>
+                                <td>CT VUKOVAR</td>
+                                <td id="009 CENTAR TEHNIKE 009 VUKOVAR0700"></td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
-
-
-                    <!-- Quantities Table -->
-                    <table class="table table-bordered table-hover">
-                        <thead style="background-color: #1b5949; color: white;">
-                        <tr>
-                            <th style="font-weight: 600;">Lokacija</th>
-                            <th style="font-weight: 600;">Dostupna količina</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td>VELEPRODAJA</td>
-                            <td id="000 VELEPRODAJA 10700"></td>
-                        </tr>
-                        <tr>
-                            <td>REZERVNI DIJELOVI</td>
-                            <td id="002 REZ. DIJELOVI0700"></td>
-                        </tr>
-                        <tr>
-                            <td>WEBSHOP</td>
-                            <td id="WEB WEB SHOP Skladište0700"></td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"></td>
-                        </tr> <!-- prazno polje -->
-                        <tr>
-                            <td>CT OSIJEK</td>
-                            <td id="001 CENTAR TEHNIKE 001 OSIJEK0700"></td>
-                        </tr>
-                        <tr>
-                            <td>CT VALPOVO</td>
-                            <td id="002 CENTAR TEHNIKE 002 VALPOVO0700"></td>
-                        </tr>
-                        <tr>
-                            <td>CT ĐAKOVO</td>
-                            <td id="004 CENTAR TEHNIKE 004 ĐAKOVO0700"></td>
-                        </tr>
-                        <tr>
-                            <td>CT NAŠICE</td>
-                            <td id="005 CENTAR TEHNIKE 005 NAŠICE0700"></td>
-                        </tr>
-                        <tr>
-                            <td>CT SLAVONSKI BROD</td>
-                            <td id="006 CENTAR TEHNIKE 006 SLAVONSKI BROD0700"></td>
-                        </tr>
-                        <tr>
-                            <td>CT BELI MANASTIR</td>
-                            <td id="008 CENTAR TEHNIKE 008 BELI MANASTIR0700"></td>
-                        </tr>
-                        <tr>
-                            <td>CT VUKOVAR</td>
-                            <td id="009 CENTAR TEHNIKE 009 VUKOVAR0700"></td>
-                        </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
