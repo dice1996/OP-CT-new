@@ -68,6 +68,7 @@
                 </li>
             </ul>
 
+
         {% endif %}
     </div>
 </nav>
@@ -145,9 +146,17 @@
     <!--<script src="/static/js/getCountNotification.js"></script>-->
 {% endif %}
 <!-- Footer Section -->
-<footer class="footer">
-    Made by <strong>Dino Cerjak</strong> - &copy; All rights reserved 2023
+<footer class="footer"
+        style="display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center; height: 80px;">
+    <div style="margin-top: 11px">
+        Made by <strong>Dino Cerjak</strong> - &copy; All rights reserved 2023
+    </div>
+    <div style="display: flex; align-items: center;">
+        <span id="statusDot" class="status-dot" style="font-size: xx-large;">●</span>
+        <span id="lastUpdateTime" class="last-update-time" style="margin-left: 8px; margin-bottom: 0px">Ažurirano: <strong>02.11.2023. 11:23</strong></span>
+    </div>
 </footer>
+
 <script>
     document.addEventListener("DOMContentLoaded", function (event) {
 
@@ -189,6 +198,7 @@
 // Your code to run since DOM is loaded and ready
     });
 </script>
+<script src="/static/js/get_status.js"></script>
 
 </body>
 </html>

@@ -40,6 +40,13 @@ def init_db():
             data TEXT NOT NULL
         );
     ''')
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS status_updates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                is_updated BOOLEAN NOT NULL,
+                last_update_time TEXT NOT NULL
+            );
+        ''')
     conn.commit()
     conn.close()
 
@@ -49,10 +56,26 @@ init_db()
 
 def reload_database():
     global excel_loader, df, product_api
-    excel_loader = ExcelLoader(env.str("EXCEL_URL"))
-    df = excel_loader.get_df()
-    product_api = ProductAPI(df)
-    print("Data reloaded successfully.")
+    try:
+        excel_loader = ExcelLoader(env.str("EXCEL_URL"))
+        df = excel_loader.get_df()
+        product_api = ProductAPI(df)
+        # Insert a new status update entry into the SQLite database
+        conn = sqlite3.connect('quotes.db')
+        c = conn.cursor()
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        is_updated = True
+        c.execute('''
+                    INSERT INTO status_updates (is_updated, last_update_time) 
+                    VALUES (?, ?)
+                ''', (is_updated, current_time))
+        conn.commit()
+        conn.close()
+
+        print("Data reloaded successfully.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 # Dekorator za provjeru je li korisnik prijavljen
@@ -126,6 +149,36 @@ def quote():
         return render_template('quote.html', offers=offers, active2="active", active1="")
     else:
         return render_template("zalihe.html", active2="", active1="active", active3="")
+
+
+@app.route('/get_status', methods=['GET'])
+@login_required
+def get_status():
+    # Connect to the SQLite database
+    conn = sqlite3.connect('quotes.db')
+    c = conn.cursor()
+
+    # Get the latest status update entry
+    c.execute('''
+        SELECT is_updated, last_update_time FROM status_updates ORDER BY id DESC LIMIT 1
+    ''')
+    status = c.fetchone()
+    conn.close()
+
+    # Check if there was a status update entry
+    if status:
+        # Return the status as a JSON response
+        return jsonify({
+            'success': True,
+            'is_updated': status[0],
+            'last_update_time': status[1]
+        })
+    else:
+        # If no status is found, return an error message
+        return jsonify({
+            'success': False,
+            'message': 'No status updates found.'
+        })
 
 
 @app.route('/create_quote', methods=['POST'])

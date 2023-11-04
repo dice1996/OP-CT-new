@@ -186,44 +186,44 @@
                     <td colspan="6" style="border-width: 0">
                         <div class="row">
                             <div class="d-flex justify-content-between w-100">
-                                <div class="col-md-9">
+                                <div class="col-md-6">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <img src="data:image/png;base64,{{ img_str }}" alt="2D Barcode"
                                                  style="width: 200px;">
                                             <p class="small-font">*Ponudu je moguće platiti skeniranjem 2D barkoda.</p>
                                         </div>
-                                        <div class="col-md-6"></div>
+                                        <div class="col-md-3"></div>
                                     </div>
                                 </div>
                                 <!-- Total, Tax, and Shipping -->
-                                <div class="col-md-3">
+                                <div class="col-md-6">
                                     <table class="table-borderless"
-                                           style="border: 0; width: 100%">
+                                           style="border: 0; min-width: 100%">
                                         <tr>
-                                            <td><h3>OSNOVICA:</h3></td>
-                                            <td style="text-align: right;"><h3>€{{ "%.2f"|format(total_amount) }}</h3>
+                                            <td style="text-align: left; font-size: 12px;"><h3>OSNOVICA:</h3></td>
+                                            <td style="text-align: right; font-size: 12px;"><h3>€{{ "%.2f"|format(total_amount) }}</h3>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td><h3>RABAT:</h3></td>
-                                            <td style="text-align: right;"><h3>
+                                            <td style="text-align: left; font-size: 12px;"><h3>RABAT:</h3></td>
+                                            <td style="text-align: right; font-size: 12px;"><h3>
                                                 €{{ "%.2f"|format(discount_amount | float * 0.8) }}</h3></td>
                                         </tr>
                                         <tr>
-                                            <td><h3>PDV:</h3></td>
-                                            <td style="text-align: right;"><h3>€{{ "%.2f"|format(tax_amount) }}</h3>
+                                            <td style="text-align: left; font-size: 12px;"><h3>PDV:</h3></td>
+                                            <td style="text-align: right; font-size: 12px;"><h3>€{{ "%.2f"|format(tax_amount) }}</h3>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td><h3 style="font-weight: bold">IZNOS EUR:</h3></td>
+                                            <td style="text-align: left;"><h3 style="font-weight: bold">IZNOS EUR:</h3></td>
                                             <td style="text-align: right;"><h3 style="font-weight: bold">
                                                 €{{ "%.2f"|format(grand_total_amount) }} </h3></td>
                                         </tr>
                                         <tr>
-                                            <td><h3 style="font-weight: bold">IZNOS HRK:</h3></td>
-                                            <td style="text-align: right;"><h3 style="font-weight: bold">
-                                                {{ "%.2f"|format(grand_total_amount | float * 7.53450 | float) }}</h3>
+                                            <td style="text-align: left; font-size: 12px;">IZNOS HRK:</td>
+                                            <td style="text-align: right; font-size: 12px;">
+                                                {{ "%.2f"|format(grand_total_amount | float * 7.53450 | float) }}kn
                                             </td>
                                         </tr>
                                     </table>

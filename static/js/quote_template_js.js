@@ -142,7 +142,6 @@ $(document).ready(function () {
                 document.body.appendChild(pdf_link);
                 pdf_link.click();
                 document.body.removeChild(pdf_link);
-                refreshOffersTable();
 
                 createOfferButton.prop("disabled", false).text("Kreiraj ponudu");
 
