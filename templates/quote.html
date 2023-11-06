@@ -18,6 +18,7 @@
     <script type="text/javascript" charset="utf8"
             src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <script src="/static/js/quote_template_js.js"></script>
+    <script src="/static/js/validate_address.js"></script>
 {% endblock %}
 
 {% block additional_js_after %}
@@ -94,9 +95,13 @@
                                                 <input type="text" class="form-control mb-3" style="max-width: 400px;"
                                                        placeholder="OIB"
                                                        name="customer_oib">
+                                                <small id="addressHelp" class="form-text text-muted">
+                                                    Očekivani fomrat: ULICA 123, 31000 MJESTO
+                                                </small>
                                                 <input type="text" class="form-control mb-3" style="max-width: 400px;"
                                                        placeholder="Adresa"
-                                                       name="customer_address">
+                                                       name="customer_address"
+                                                       aria-describedby="addressHelp">
                                                 <input type="text" class="form-control mb-3" style="max-width: 400px;"
                                                        placeholder="Telefon"
                                                        name="customer_phone">
