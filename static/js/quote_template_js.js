@@ -375,7 +375,7 @@ function moveDataTablesControls() {
     $('.dataTables_filter').appendTo('#searchDiv');
 }
 
-window.addEventListener('load', function() {
-  document.body.style.opacity = '1';
+window.addEventListener('load', function () {
+    document.body.style.opacity = '1';
 });
 
