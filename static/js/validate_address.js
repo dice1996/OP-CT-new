@@ -5,16 +5,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
   // Define the regex pattern
   var pattern = /^(\d+\.\s)?(Ul\.\s)?[A-Za-zčćžšđČĆŽŠĐ0-9\.\s]+ \d+(\w\/\d+)?\w*?,\s+\d{5} [A-Za-zčćžšđČĆŽŠĐ\s]+$/;
 
-  // Initialize a timer variable
-  var timeout = null;
-
-  // Add a keyup event listener to the input field
-  input.addEventListener('keyup', function () {
-    // Clear the existing timeout
-    clearTimeout(timeout);
-
-    // Set a new timeout to validate the address
-    timeout = setTimeout(function () {
+  // Function to validate the address
+  function validateAddress() {
+    // Check if the input is not empty and not just whitespace
+    if (input.value.trim()) {
       var isValid = pattern.test(input.value);
 
       // Use Bootstrap classes to provide visual feedback
@@ -25,6 +19,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
         input.classList.remove('is-valid');
         input.classList.add('is-invalid');
       }
-    }, 500); // Delay in milliseconds (500ms in this case)
+    } else {
+      // If the input is empty, remove both classes
+      input.classList.remove('is-invalid');
+      input.classList.remove('is-valid');
+    }
+  }
+
+  // Initialize a timer variable for debouncing
+  let debounceTimer;
+
+  // Add an 'input' event listener to the input field
+  input.addEventListener('input', function () {
+    // Clear any existing timer to reset the debounce period
+    clearTimeout(debounceTimer);
+
+    // Set a new debounce timer
+    debounceTimer = setTimeout(validateAddress, 500); // Delay in milliseconds (500ms in this case)
   });
 });
