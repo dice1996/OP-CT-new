@@ -144,10 +144,10 @@ $(document).ready(function () {
                 document.body.removeChild(pdf_link);
 
                 createOfferButton.prop("disabled", false).text("Kreiraj ponudu");
+                refreshOffersTable()
 
             },
             error: function (error) {
-                refreshOffersTable();
                 createOfferButton.prop("disabled", false).text("Kreiraj ponudu");
 
                 // Handle error
@@ -305,17 +305,20 @@ function refreshOffersTable() {
             method: 'GET',
             success: function (response) {
                 console.log(response);
-                $('.offer-table').DataTable().destroy();
+                // Destroy the existing DataTable instance if it exists
+                if ($.fn.DataTable.isDataTable('.offer-table')) {
+                    $('.offer-table').DataTable().destroy();
+                }
+                // Clear the table body
                 const tableBody = $('.offer-table tbody');
-                console.log($('.offer-table tbody').length);
                 tableBody.empty(); // Clear existing rows
 
                 response.forEach(offer => {
                     const row = `<tr data-row-id="${offer.row_id}">
                         <td>${offer.customer_name}</td>
-                        <td>${offer.id}</td>
+                        <td style="width: 17%;">${offer.id}</td>
                         <td>${offer.total_amount}€</td>
-                        <td>
+                        <td style="width: 18%;">
                             <button type="button" class="btn btn-primary load-button" title="Učitaj"><i class="fa fa-folder-open"></i></button>
                             <button type="button" class="btn btn-success download-button" title="Preuzmi"><i class="fa fa-download"></i></button>
                             <button type="button" class="btn btn-danger delete-button" title="Obriši"><i class="fa fa-trash"></i></button>
@@ -324,43 +327,44 @@ function refreshOffersTable() {
                     tableBody.append(row);
                 });
 
-                // Re-initialize DataTable to reflect changes
+                setTimeout(reinitializeDataTable, 0);
 
-                $('.offer-table').DataTable({
-                    "order": [[1, "desc"]],
-                    "language": {
-                        "search": "Pretraga:",
-                        "lengthMenu": "Prikaz _MENU_ ponuda",
-                        "info": "Prikazano _START_ do _END_ od ukupno _TOTAL_ ponuda",
-                        "infoEmpty": "Prikazano 0 do 0 od 0 unosa",
-                        "infoFiltered": "(Filtrirano iz _MAX_ ukupnih ponuda)",
-                        "paginate": {
-                            "first": "Prva",
-                            "last": "Posljednja",
-                            "next": "Sljedeća",
-                            "previous": "Prethodna"
-                        },
-                    },
-                    // Enable vertical scrolling
-                    scrollY: '195px',  // Set the height
-
-                    // Enable scroll collapse
-                    scrollCollapse: true,
-
-                    // Enable fixed header and footer
-                    fixedHeader: {
-                        header: true,
-                        footer: true
-                    }
-                });
-                moveDataTablesControls();
-            },
-            error: function (error) {
+            }, error: function (error) {
                 console.log("Error:", error);
             }
         }
-    )
-    ;
+    );
+}
+
+function reinitializeDataTable() {
+    $('.offer-table').DataTable({
+        "order": [[1, "desc"]],
+        "language": {
+            "search": "Pretraga:",
+            "lengthMenu": "Prikaz _MENU_ ponuda",
+            "info": "Prikazano _START_ do _END_ od ukupno _TOTAL_ ponuda",
+            "infoEmpty": "Prikazano 0 do 0 od 0 unosa",
+            "infoFiltered": "(Filtrirano iz _MAX_ ukupnih ponuda)",
+            "paginate": {
+                "first": "Prva",
+                "last": "Posljednja",
+                "next": "Sljedeća",
+                "previous": "Prethodna"
+            },
+        },
+        // Enable vertical scrolling
+        scrollY: '195px',  // Set the height
+
+        // Enable scroll collapse
+        scrollCollapse: true,
+
+        // Enable fixed header and footer
+        fixedHeader: {
+            header: true,
+            footer: true
+        }
+    });
+    moveDataTablesControls();
 }
 
 function moveDataTablesControls() {

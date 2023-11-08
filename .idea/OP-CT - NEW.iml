@@ -17,6 +17,10 @@
     <orderEntry type="library" name="font-awesome" level="application" />
     <orderEntry type="library" name="bootstrap" level="application" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="versionSpecifier" value="Don't specify version" />
+    <option name="removeUnused" value="true" />
+  </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Jinja2" />
     <option name="TEMPLATE_FOLDERS">

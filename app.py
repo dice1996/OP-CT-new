@@ -8,7 +8,9 @@ from envparse import env
 from flask import Flask, jsonify, request, render_template, flash, session, redirect, url_for, make_response
 from flask_cors import CORS
 from flask_weasyprint import HTML
+import pandas as pd
 
+from api.Airtable import AirtableData
 from api.Barcode import PaymentBarcode
 from api.loginService import authenticate
 from api.product import ProductAPI
@@ -29,6 +31,11 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=72)
 
 # Inicijaliziraj globalne varijable za pomoćne funkcije
 helpers = Helpers()
+
+airtable_data = AirtableData(env.str("AIRTABLE_API_TOKEN"),
+                             env.str("AIRTABLE_BASE_ID"),
+                             env.str("AIRTABLE_TABLE_ID")
+                             )
 
 
 def init_db():
@@ -226,8 +233,6 @@ def create_quote():
         # Calculate Iznos (Grand Total)
         iznos = round(total_amount_with_tax - discount_amount_with_tax, 2)
 
-        price_wo_pdv = round()
-
         # Convert Grand Total to Eurocents
         eurocents = int(iznos * 100)
         formatted_eurocents = str(eurocents).rjust(15, '0')
@@ -420,30 +425,63 @@ def get_product_suggestions():
     return jsonify(product_api.get_product_suggestions(product_query))
 
 
-# @app.route('/api/update_user_data', methods=['POST'])
-# @login_required
-# def update_user_data():
-#     # Extract the new values from the incoming request
-#     cms_user = request.json.get('cms_user')
-#     cms_password = request.json.get('cms_password')
-#
-#     # Assuming 'username' is a unique identifier in your database
-#     user_identifier = session.get('user_id')
-#
-#     # Prepare the data for updating in the NocoDB database
-#     updated_data = {
-#         "cms_user": cms_user,
-#         "cms_password": cms_password
-#     }
-#
-#     # Use the NocodbConnector to update the data
-#     response = nocodb_api.update_user_data(user_identifier, updated_data)
-#
-#     if response.status_code == 200:
-#         session['cms_user'] = cms_user
-#         session['cms_password'] = cms_password
-#
-#     return str(response.status_code)
+# ******************* AIRTABLE API ACCESS **************************************
+
+@app.route('/api/airtable_records', methods=['GET'])
+@login_required
+def get_airtable_records():
+    df_records = airtable_data.get_dataframe_from_view("1. KORAK: Unos narudžbi")
+    df_parsed = df_records[["Broj_narudzbe", "record_id"]]
+    df_merged = pd.merge(df_parsed, df_orders_all, left_on='Broj_narudzbe', right_on='Broj', how='left')
+    print(df_merged)
+
+    df_merged = df_merged.merge(df_products_all[['Naslov', 'Šifra / kat. broj ***']], on='Naslov', how='left')
+    print(df_merged)
+
+    return jsonify({'message': 'Here are your Airtable records',
+                    'records': ""})
+
+
+@app.route('/orders/uploader', methods=['GET', 'POST'])
+@login_required
+def upload_files():
+    if request.method == 'GET':
+        return render_template("upload.html")
+    else:
+        # Check if the post request has the file part
+        if 'file1' not in request.files or 'file2' not in request.files:
+            return jsonify({"error": "No file part in the request"}), 400
+
+        file1 = request.files['file1']
+        file2 = request.files['file2']
+
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file1.filename == '' or file2.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        if file1 and file2:
+
+            if not os.path.exists('temp_directory'):
+                os.makedirs('temp_directory')
+
+            orders_file = os.path.join('temp_directory', 'orders.txt')
+            products_file = os.path.join('temp_directory', 'products.txt')
+
+            file1.save(orders_file)
+            file2.save(products_file)
+
+            global df_orders_all, df_products_all
+            df_orders_all = pd.read_csv(orders_file, sep=',')
+            df_orders_all = df_orders_all.drop(index=0).reset_index(drop=True)
+            df_orders_all['Broj'] = df_orders_all['Broj'].astype(int)
+
+            df_products_all = pd.read_csv(products_file, sep=',')
+            df_products_all = df_products_all.drop(index=0).reset_index(drop=True)
+
+            return jsonify({"message": "Files successfully uploaded"}), 200
+
+        return jsonify({"error": "Unknown error occurred"}), 500
 
 
 if __name__ == "__main__":
