@@ -71,7 +71,8 @@
                     <h2 class="header-title">Učitavanje potrebnih datoteka</h2>
                     <p class="lead">
                         Ovdje je potrebno učitati 2 CSV-a koja se izvezu iz CMS-a. Prvi je export narudžbi a
-                        drugi je export proizvoda.
+                        drugi je export proizvoda. U exportu narudžbi su potrebni slijedeći podaci: <strong>Broj, Email,
+                        Naslov!</strong>
                     </p>
                 </div>
                 <form id="fileUploadForm" enctype="multipart/form-data">
@@ -99,18 +100,23 @@
     <script>
         $(document).ready(function () {
             $('#uploadButton').click(function () {
+                // Disable the button and change its text
+                $(this).prop('disabled', true).text('Učitavanje...');
+
                 var formData = new FormData($('#fileUploadForm')[0]);
                 $.ajax({
-                    url: '/orders/uploader', // Make sure this is the correct route for your Flask app
+                    url: '/orders/uploader',
                     type: 'POST',
                     data: formData,
                     contentType: false, // This is required for multipart/form-data
                     processData: false, // This is required for multipart/form-data
                     success: function (response) {
-                        alert('Datoteke uspješno učitane.');
+                        console.log('Datoteke uspješno učitane.');
+                        window.location.href = 'http://ceky.ddns.net:1234/api/airtable_records';
                     },
                     error: function (response) {
                         alert('Pogreška prilikom učitavanja! ');
+                        $('#uploadButton').prop('disabled', false).text('Učitaj i nastavi');
                     }
                 });
             });

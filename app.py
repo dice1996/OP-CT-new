@@ -4,11 +4,11 @@ from base64 import b64encode
 from datetime import datetime, timedelta
 from functools import wraps
 
+import pandas as pd
 from envparse import env
 from flask import Flask, jsonify, request, render_template, flash, session, redirect, url_for, make_response
 from flask_cors import CORS
 from flask_weasyprint import HTML
-import pandas as pd
 
 from api.Airtable import AirtableData
 from api.Barcode import PaymentBarcode
@@ -17,9 +17,6 @@ from api.product import ProductAPI
 from api.quote import Quote
 from utils.excel_loader import ExcelLoader
 from utils.helper_func import Helpers
-
-# postavljanje radne datoteke
-os.chdir('C:/Users/dinoc/Documents/PyProjects/OP-CT - NEW')
 
 env.read_envfile('.env')
 
@@ -430,16 +427,39 @@ def get_product_suggestions():
 @app.route('/api/airtable_records', methods=['GET'])
 @login_required
 def get_airtable_records():
+    location_columns = [
+        "000 VELEPRODAJA 10700", "002 CENTAR TEHNIKE 002 VALPOVO0700", "008 CENTAR TEHNIKE 008 BELI MANASTIR0700",
+        "004 CENTAR TEHNIKE 004 ĐAKOVO0700", "006 CENTAR TEHNIKE 006 SLAVONSKI BROD0700",
+        "009 CENTAR TEHNIKE 009 VUKOVAR0700", "005 CENTAR TEHNIKE 005 NAŠICE0700",
+        "001 CENTAR TEHNIKE 001 OSIJEK0700", "002 REZ. DIJELOVI0700"
+    ]
+
+    # Dohvati podatke iz prvog pogleda u Airtable tablici
     df_records = airtable_data.get_dataframe_from_view("1. KORAK: Unos narudžbi")
-    df_parsed = df_records[["Broj_narudzbe", "record_id"]]
-    df_merged = pd.merge(df_parsed, df_orders_all, left_on='Broj_narudzbe', right_on='Broj', how='left')
-    print(df_merged)
+    if df_records is None:
+        return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
+    else:
+        data = helpers.edit_data(df_orders_all, df_products_all, df_records)
+        for index, row in data.iterrows():
+            #             # Assuming 'Sifra' is now a list of product codes
+            common_location_info = helpers.get_common_location_for_products(df, row['Sifra'], location_columns)
+            if common_location_info:
+                location, max_min_quantity = common_location_info
+                data.at[index, 'location'] = location
+                if max_min_quantity == 1:
+                    # Set "Zadnji" only if a location is found
+                    data.at[index, 'note'] = "Zadnji"
+            else:
+                # Set "Nema stanja" if no common location is found
+                data.at[index, 'location'] = 'None'
+                data.at[index, 'note'] = None  # Ensure no note is set in this case
 
-    df_merged = df_merged.merge(df_products_all[['Naslov', 'Šifra / kat. broj ***']], on='Naslov', how='left')
-    print(df_merged)
+        # mapiraj lokacije slanja
+        data = helpers.map_locations(data)
 
-    return jsonify({'message': 'Here are your Airtable records',
-                    'records': ""})
+        _ = airtable_data.update_record(data)
+
+        return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
 
 
 @app.route('/orders/uploader', methods=['GET', 'POST'])
