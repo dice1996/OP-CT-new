@@ -3,13 +3,20 @@
 {% block title %}DOSTUPNOST by Dino Cerjak{% endblock %}
 
 {% block additional_js_before %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
     <script>
         window.addEventListener('load', function () {
             document.body.style.opacity = '1';
         });
     </script>
+    <script type="text/javascript">
+        var isAdmin = {{ 'true' if session.role == 'admin' else 'false' }};
+    </script>
+
     <script src="/static/js/searchProduct.js"></script>
     <script src="/static/js/highlightProducts.js"></script>
+    <script src="/static/js/update_quantity.js"></script>
 {% endblock %}
 
 {% block additional_js_after %}
@@ -61,21 +68,40 @@
 
 
                         <!-- Quantities Table -->
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover" style="text-align: center;">
                             <thead style="background-color: #1b5949; color: white;">
                             <tr>
-                                <th style="font-weight: 600;">Lokacija</th>
-                                <th style="font-weight: 600;">Dostupna količina</th>
+                                <th style="font-weight: 600; width: 220px;">Lokacija</th>
+                                <th style="font-weight: 600; text-align: center;">Dostupna količina</th>
+                                {% if session.role == 'admin' %}
+                                    <th style="font-weight: 600; width: 100px;">Ažuriraj</th>
+                                {% endif %}
                             </tr>
                             </thead>
                             <tbody>
                             <tr>
                                 <td>VELEPRODAJA</td>
                                 <td id="000 VELEPRODAJA 10700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td>REZERVNI DIJELOVI</td>
                                 <td id="002 REZ. DIJELOVI0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td>WEBSHOP</td>
@@ -87,30 +113,86 @@
                             <tr>
                                 <td>CT OSIJEK</td>
                                 <td id="001 CENTAR TEHNIKE 001 OSIJEK0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td>CT VALPOVO</td>
                                 <td id="002 CENTAR TEHNIKE 002 VALPOVO0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td>CT ĐAKOVO</td>
                                 <td id="004 CENTAR TEHNIKE 004 ĐAKOVO0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td>CT NAŠICE</td>
                                 <td id="005 CENTAR TEHNIKE 005 NAŠICE0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td>CT SLAVONSKI BROD</td>
                                 <td id="006 CENTAR TEHNIKE 006 SLAVONSKI BROD0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td>CT BELI MANASTIR</td>
                                 <td id="008 CENTAR TEHNIKE 008 BELI MANASTIR0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td>CT VUKOVAR</td>
                                 <td id="009 CENTAR TEHNIKE 009 VUKOVAR0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             </tbody>
                         </table>

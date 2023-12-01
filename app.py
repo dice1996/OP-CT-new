@@ -422,17 +422,37 @@ def get_product_suggestions():
     return jsonify(product_api.get_product_suggestions(product_query))
 
 
+@app.route('/api/update_quantity', methods=['POST'])
+def api_update_quantity():
+    data = request.json
+    product_code = data.get('productCode')
+    location_id = data.get('location')
+    change = data.get('newQuantity') - data.get('currentQuantity')
+    result, status_code = product_api.update_product_quantity(product_code, location_id, change)
+    return jsonify(result), status_code
+
+
 # ******************* AIRTABLE API ACCESS **************************************
 
 @app.route('/api/airtable_records', methods=['GET'])
 @login_required
 def get_airtable_records():
-    location_columns = [
+    default_location_columns = [
         "000 VELEPRODAJA 10700", "002 CENTAR TEHNIKE 002 VALPOVO0700", "008 CENTAR TEHNIKE 008 BELI MANASTIR0700",
         "004 CENTAR TEHNIKE 004 ĐAKOVO0700", "006 CENTAR TEHNIKE 006 SLAVONSKI BROD0700",
         "009 CENTAR TEHNIKE 009 VUKOVAR0700", "005 CENTAR TEHNIKE 005 NAŠICE0700",
         "001 CENTAR TEHNIKE 001 OSIJEK0700", "002 REZ. DIJELOVI0700"
     ]
+
+    # Extract 'locations' query parameter
+    selected_locations = request.args.getlist('locations[]')
+
+    # If selected_locations is not empty, filter default_location_columns
+    # to maintain the order of elements
+    if selected_locations:
+        location_columns = [loc for loc in default_location_columns if loc in selected_locations]
+    else:
+        location_columns = default_location_columns
 
     # Dohvati podatke iz prvog pogleda u Airtable tablici
     df_records = airtable_data.get_dataframe_from_view("1. KORAK: Unos narudžbi")
@@ -465,8 +485,19 @@ def get_airtable_records():
 @app.route('/orders/uploader', methods=['GET', 'POST'])
 @login_required
 def upload_files():
+    location_mapping = {
+        "000 VELEPRODAJA 10700": "VP",
+        "002 REZ. DIJELOVI0700": "VP - Rezervni dijelovi",
+        "001 CENTAR TEHNIKE 001 OSIJEK0700": "Osijek",
+        "002 CENTAR TEHNIKE 002 VALPOVO0700": "Valpovo",
+        "004 CENTAR TEHNIKE 004 ĐAKOVO0700": "Đakovo",
+        "005 CENTAR TEHNIKE 005 NAŠICE0700": "Našice",
+        "006 CENTAR TEHNIKE 006 SLAVONSKI BROD0700": "Slavonski Brod",
+        "008 CENTAR TEHNIKE 008 BELI MANASTIR0700": "Beli Manastir",
+        "009 CENTAR TEHNIKE 009 VUKOVAR0700": "Vukovar"
+    }
     if request.method == 'GET':
-        return render_template("upload.html")
+        return render_template("upload.html", location_mapping=location_mapping)
     else:
         # Check if the post request has the file part
         if 'file1' not in request.files or 'file2' not in request.files:

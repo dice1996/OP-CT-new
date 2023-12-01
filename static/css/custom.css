@@ -346,6 +346,19 @@ body {
   animation: pulsate-opacity 1.5s infinite ease-in-out;
 }
 
+.update-button {
+    border: #1B5949;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.update-button-plus {
+    color: #1b5949; /* Or any color that fits your design */
+}
+
+.update-button-minus {
+    color: #80219f; /* Or any color that fits your design */
+}
 
 
 

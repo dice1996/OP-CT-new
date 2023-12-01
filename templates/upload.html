@@ -75,6 +75,25 @@
                         Naslov!</strong>
                     </p>
                 </div>
+                <!-- Location checkboxes -->
+                <div class="text-left mb-2">
+                    <label for="locationForm" class="form-label">Odabir lokacija za sortiranje robe:</label>
+                </div>
+                <form id="locationForm" class="d-flex flex-wrap justify-content-center">
+                    {% for key, value in location_mapping.items() %}
+                        <div class="col-md-4 d-flex justify-content-left">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="{{ key }}" id="{{ key }}"
+                                       checked>
+                                <label class="form-check-label" for="{{ key }}">
+                                    {{ value }}
+                                </label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </form>
+                <br>
+
                 <form id="fileUploadForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="file1" class="form-label">Export narudžbi:</label>
@@ -104,6 +123,12 @@
                 $(this).prop('disabled', true).text('Učitavanje...');
 
                 var formData = new FormData($('#fileUploadForm')[0]);
+
+                // Collecting the values of checked checkboxes
+                var selectedLocations = [];
+                $('#locationForm input:checked').each(function () {
+                    selectedLocations.push($(this).val());
+                });
                 $.ajax({
                     url: '/orders/uploader',
                     type: 'POST',
@@ -112,7 +137,13 @@
                     processData: false, // This is required for multipart/form-data
                     success: function (response) {
                         console.log('Datoteke uspješno učitane.');
-                        window.location.href = 'http://ceky.ddns.net:1234/api/airtable_records';
+                        // Create a query string from selected locations
+                        var queryString = selectedLocations.map(function (loc) {
+                            return encodeURIComponent('locations[]') + '=' + encodeURIComponent(loc);
+                        }).join('&');
+
+                        // Redirect to the new URL with the selected locations as a query string
+                        window.location.href = 'http://ceky.ddns.net:1234/api/airtable_records?' + queryString;
                     },
                     error: function (response) {
                         alert('Pogreška prilikom učitavanja! ');

@@ -72,3 +72,31 @@ class ProductAPI:
 
         float_value = float(s.strip().replace(',', '.'))
         return int(round(float_value))
+
+    def update_product_quantity(self, product_code, location_id, change):
+        # Ensure product_code is a string and location_id is trimmed
+        product_code = str(product_code).strip()
+        location_id = location_id.strip()
+
+        # Find the product row by its code
+        product_row = self.df[self.df['Sifra1000'].astype(str) == product_code]
+
+        if not product_row.empty:
+            # Ensure location_id is valid
+            if location_id in self.df.columns:
+                # Get the current quantity and update it
+                current_quantity = self.string_to_int(product_row.iloc[0][location_id])
+                new_quantity = current_quantity + change
+
+                # Update the DataFrame
+                self.df.loc[product_row.index, location_id] = str(new_quantity)
+
+                # Return success message with updated quantity
+                return {
+                    'message': 'Quantity updated successfully',
+                    'new_quantity': new_quantity
+                }, 200
+            else:
+                return {'error': 'Invalid location ID'}, 400
+        else:
+            return {'error': 'Product not found'}, 404

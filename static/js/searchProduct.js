@@ -36,7 +36,20 @@ function searchProduct() {
                     quantityCell.innerText = data[0].quantities[location];
                 }
             }
+            // Attach event listeners
+            document.querySelectorAll('.update-button-plus').forEach(button => {
+                button.addEventListener('click', function () {
+                    updateQuantity(this, 1); // Increment quantity
+                });
+            });
+
+            document.querySelectorAll('.update-button-minus').forEach(button => {
+                button.addEventListener('click', function () {
+                    updateQuantity(this, -1); // Decrement quantity
+                });
+            });
             highlightMaxQuantityRow();
+
         },
         error: function () {
             const alertBox = document.getElementById('alertBox');
