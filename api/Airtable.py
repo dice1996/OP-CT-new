@@ -53,3 +53,23 @@ class AirtableData:
                 # print(f"Record {record_id} updated successfully.")
             except Exception as e:
                 print(f"Failed to update record {record_id}: {e}")
+
+    def update_products(self, data):
+        for index, row in data.iterrows():
+            record_id = row['record_id']
+
+            # Replace NaN values with None
+            email = row['Email'] if pd.notnull(row['Email']) else None
+            product_titles = row['Naslov']
+            products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
+
+            data1 = {
+                'Email': email,
+                'Proizvodi': products_formatted
+                # Add other fields you want to update
+            }
+            try:
+                self.table.update(record_id, data1)
+                # print(f"Record {record_id} updated successfully.")
+            except Exception as e:
+                print(f"Failed to update record {record_id}: {e}")

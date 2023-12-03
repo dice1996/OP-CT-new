@@ -461,7 +461,7 @@ def get_airtable_records():
     else:
         data = helpers.edit_data(df_orders_all, df_products_all, df_records)
         for index, row in data.iterrows():
-            #             # Assuming 'Sifra' is now a list of product codes
+            # Assuming 'Sifra' is now a list of product codes
             common_location_info = helpers.get_common_location_for_products(df, row['Sifra'], location_columns)
             if common_location_info:
                 location, max_min_quantity = common_location_info
@@ -533,6 +533,29 @@ def upload_files():
             return jsonify({"message": "Files successfully uploaded"}), 200
 
         return jsonify({"error": "Unknown error occurred"}), 500
+
+
+@app.route('/orders/update_products', methods=['GET'])
+@login_required
+def update_products():
+    orders_file = os.path.join('temp_directory', 'orders.txt')
+    products_file = os.path.join('temp_directory', 'products.txt')
+
+    global df_orders_all, df_products_all
+    df_orders_all = pd.read_csv(orders_file, sep=',')
+    df_orders_all = df_orders_all.drop(index=0).reset_index(drop=True)
+    df_orders_all['Broj'] = df_orders_all['Broj'].astype(int)
+
+    df_products_all = pd.read_csv(products_file, sep=',')
+    df_products_all = df_products_all.drop(index=0).reset_index(drop=True)
+
+    df_records = airtable_data.get_dataframe_from_view("1. KORAK: Unos narudžbi")
+    if df_records is None:
+        return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
+    else:
+        data = helpers.edit_data(df_orders_all, df_products_all, df_records)
+        _ = airtable_data.update_products(data)
+        return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
 
 
 if __name__ == "__main__":

@@ -106,6 +106,14 @@
                             <tr>
                                 <td>WEBSHOP</td>
                                 <td id="WEB WEB SHOP Skladište0700"></td>
+                                {% if session.role == 'admin' %}
+                                    <td>
+                                        <button class="update-button update-button-plus"><i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="update-button update-button-minus"><i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <td colspan="2"></td>
