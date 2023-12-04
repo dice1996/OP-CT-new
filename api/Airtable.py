@@ -35,7 +35,10 @@ class AirtableData:
             note = None if pd.isna(row.get('note', None)) else row.get('note', None)
 
             product_titles = row['Naslov']
-            products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
+            try:
+                products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
+            except:
+                products_formatted = '\n'.join([f"- {title}" for title in product_titles])
 
             if not location:
                 status = "Nema stanja"
@@ -61,7 +64,10 @@ class AirtableData:
             # Replace NaN values with None
             email = row['Email'] if pd.notnull(row['Email']) else None
             product_titles = row['Naslov']
-            products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
+            try:
+                products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
+            except:
+                products_formatted = '\n'.join([f"- {title}" for title in product_titles])
 
             data1 = {
                 'Email': email,
