@@ -1,30 +1,18 @@
-function updateQuantity(button, change) {
-    let row = button.closest('tr');
-    let quantityCell = row.cells[1]; // Assuming the quantity cell is the second cell
-    let locationId = quantityCell.id; // Extracting the location ID from the quantity cell
-
-    // Disable all buttons in the row
-    let buttons = row.querySelectorAll('button');
-    buttons.forEach(btn => btn.disabled = true);
-
+// funkcija dobiva kod proizvoda iz tablice
+function getProductCode() {
     let productCodeElement = document.getElementById('productCode');
-    let productCode = productCodeElement ? productCodeElement.innerText.trim() : null;
+    return productCodeElement ? productCodeElement.innerText.trim() : null;
+}
 
-    if (!productCode) {
-        console.error('Product code element not found');
-        return;
-    }
+// funkcija dobiva trenutnu količinu određenog retka u tablici
+function getCurrentQuantity(row) {
+    let quantityCell = row.cells[1]; // Druga ćelija predstavlja količinu
+    return parseInt(quantityCell.innerText, 10) || 0;
+}
 
-    if (!quantityCell) {
-        console.error('Quantity cell not found');
-        return;
-    }
-
-    let currentQuantity = parseInt(quantityCell.innerText, 10) || 0;
-    let newQuantity = currentQuantity + change;
-
-    // Send AJAX request to update quantity on the server
-    $.ajax({
+// Ova funkcija šalje AJAX zahtjev na server kako bi se ažurirala količina u dataframe-u
+function updateQuantityOnServer(productCode, locationId, currentQuantity, newQuantity) {
+    return $.ajax({
         url: '/api/update_quantity',
         type: 'POST',
         contentType: 'application/json',
@@ -34,18 +22,43 @@ function updateQuantity(button, change) {
             currentQuantity: currentQuantity,
             newQuantity: newQuantity
         }),
-        success: function (response) {
-            // Update the quantity in the table
+    });
+}
+
+// Glavna funkcija koja hendla gumbe i ažuriranje količine
+function handleQuantityUpdate(button, change) {
+    let row = button.closest('tr');
+    let quantityCell = row.cells[1]; // Druga ćelija predstavlja količinu
+    let locationId = quantityCell.id; // Izvlačimo ID lokacije ze ćelije količine
+
+    let currentQuantity = getCurrentQuantity(row);
+    let newQuantity = currentQuantity + change;
+
+    // Onemogućavamo sve gumbe u retku
+    let buttons = row.querySelectorAll('button');
+    buttons.forEach(btn => btn.disabled = true);
+
+    let productCode = getProductCode();
+
+    if (!productCode) {
+        console.error('Product code element not found');
+        // Omogućavamo gumbe
+        buttons.forEach(btn => btn.disabled = false);
+        return;
+    }
+
+    // Šaljemo AJAX zahtjev na server kako bi se ažurirala količina
+    updateQuantityOnServer(productCode, locationId, currentQuantity, newQuantity)
+        .done(function (response) {
+            // Ažuriramo količinu u tablici
             quantityCell.innerText = response.new_quantity;
             highlightMaxQuantityRow();
-            // Re-enable buttons
-            buttons.forEach(btn => btn.disabled = false);
-        },
-        error: function (xhr, status, error) {
+        })
+        .fail(function (xhr, status, error) {
             console.error("Error - Status:", status, "Message:", xhr.responseText);
-            highlightMaxQuantityRow();
-            // Re-enable buttons
+        })
+        .always(function () {
+            // Omogućavamo gumbe
             buttons.forEach(btn => btn.disabled = false);
-        }
-    });
+        });
 }

@@ -36,18 +36,7 @@ function searchProduct() {
                     quantityCell.innerText = data[0].quantities[location];
                 }
             }
-            // Attach event listeners
-            document.querySelectorAll('.update-button-plus').forEach(button => {
-                button.addEventListener('click', function () {
-                    updateQuantity(this, 1); // Increment quantity
-                });
-            });
-
-            document.querySelectorAll('.update-button-minus').forEach(button => {
-                button.addEventListener('click', function () {
-                    updateQuantity(this, -1); // Decrement quantity
-                });
-            });
+            attachEventListeners();
             highlightMaxQuantityRow();
 
         },
@@ -55,5 +44,19 @@ function searchProduct() {
             const alertBox = document.getElementById('alertBox');
             alertBox.innerHTML = '<div class="alert alert-danger" role="alert">Proizvod nije pronađen.</div>';
         }
+    });
+}
+
+function attachEventListeners() {
+    // Remove existing event listeners to avoid duplicates
+    $('.update-button-plus, .update-button-minus').off('click');
+
+    // Attach new event listeners
+    $('.update-button-plus').on('click', function() {
+        handleQuantityUpdate(this, 1);
+    });
+
+    $('.update-button-minus').on('click', function() {
+        handleQuantityUpdate(this, -1);
     });
 }
