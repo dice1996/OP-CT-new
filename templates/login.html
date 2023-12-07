@@ -13,13 +13,18 @@
                 <form action="/login" method="post" class="roboto-form">
                     <div class="form-group">
                         <label for="username">Korisničko ime:</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
                     </div>
                     <div class="form-group">
                         <label for="password">Lozinka:</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block">Prijava</button>
+                    <div class="form-group">
+                        <label for="remember-me">
+                            <input type="checkbox" id="remember-me" name="remember-me"> Remeber me
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" style="background-color: #58427C">Prijava</button>
                 </form>
             </div>
         </div>
