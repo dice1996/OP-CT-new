@@ -26,13 +26,13 @@
         }
 
         .btn-primary {
-            background-color: #0056b3;
-            border-color: #004085;
+            background-color: #58427C;
+            border-color: #3d2e56;
         }
 
         .btn-primary:hover {
-            background-color: #0069d9;
-            border-color: #005cbf;
+            background-color: #7a5fa9;
+            border-color: #70549c;
         }
 
         .lead {
@@ -104,7 +104,8 @@
                         <input type="file" class="form-control" id="file2" name="file2" required>
                     </div>
                     <div class="text-center">
-                        <button type="button" class="btn btn-primary btn-lg" id="uploadButton">Učitaj i nastavi</button>
+                        <button type="button" class="btn btn-primary btn-lg" id="uploadButton">Učitaj i sortiraj</button>
+                        <button type="button" class="btn btn-primary btn-lg" id="sortButton">Sortiraj</button>
                     </div>
                 </form>
             </div>
@@ -147,9 +148,27 @@
                     },
                     error: function (response) {
                         alert('Pogreška prilikom učitavanja! ');
-                        $('#uploadButton').prop('disabled', false).text('Učitaj i nastavi');
+                        $('#uploadButton').prop('disabled', false).text('Učitaj i sortiraj');
                     }
                 });
+            });
+
+            $('#sortButton').click(function () {
+                // Disable the button and change its text
+                $(this).prop('disabled', true).text('Sortiranje...');
+
+                var selectedLocations = [];
+                $('#locationForm input:checked').each(function () {
+                    selectedLocations.push($(this).val());
+                });
+                // Create a query string from selected locations
+                var queryString = selectedLocations.map(function (loc) {
+                    return encodeURIComponent('locations[]') + '=' + encodeURIComponent(loc);
+                }).join('&');
+
+                // Redirect to the new URL with the selected locations as a query string
+                window.location.href = 'http://ceky.ddns.net:1234/api/airtable_records?' + queryString;
+                $(this).prop('disabled', false).text('Sortiraj...');
             });
         });
     </script>
