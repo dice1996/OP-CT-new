@@ -34,7 +34,7 @@ class AirtableData:
             location = [row['location']] if pd.notnull(row['location']) and row['location'] != 'None' else []
             note = None if pd.isna(row.get('note', None)) else row.get('note', None)
 
-            product_titles = row['Naslov']
+            product_titles = row['Naslov_Sifra']
             try:
                 products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
             except:
@@ -63,7 +63,7 @@ class AirtableData:
 
             # Replace NaN values with None
             email = row['Email'] if pd.notnull(row['Email']) else None
-            product_titles = row['Naslov']
+            product_titles = row['Naslov_Sifra']
             try:
                 products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
             except:

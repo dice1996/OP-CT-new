@@ -39,6 +39,9 @@ class Helpers:
 
         # Rename columns as necessary
         df_grouped.rename(columns={'Šifra / kat. broj ***': 'Sifra'}, inplace=True)
+        
+        df_grouped['Naslov_Sifra'] = df_grouped.apply(
+            lambda row: ["{} | {}".format(title, sifra) for title, sifra in zip(row['Naslov'], row['Sifra'])], axis=1)
 
         # Drop the 'Broj' column if it's no longer needed
         df_grouped.drop(columns=['Broj'], inplace=True, errors='ignore')
