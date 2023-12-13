@@ -74,6 +74,7 @@
 </nav>
 <div id="additional-js-before">
     {% block additional_js_before %}{% endblock %}
+    <script src="/static/js/get_status.js"></script>
 </div>
 <div class="content-wrapper" id="main-content">
     {% block content %}{% endblock %}
@@ -198,7 +199,5 @@
 // Your code to run since DOM is loaded and ready
     });
 </script>
-<script src="/static/js/get_status.js"></script>
-
 </body>
 </html>

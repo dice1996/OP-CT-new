@@ -1,10 +1,14 @@
+import io
 import os
+import re
 import sqlite3
 from base64 import b64encode
 from datetime import datetime, timedelta
 from functools import wraps
 
 import pandas as pd
+import pytesseract
+from PIL import Image
 from envparse import env
 from flask import Flask, jsonify, request, render_template, flash, session, redirect, url_for, make_response
 from flask_cors import CORS
@@ -19,6 +23,8 @@ from utils.excel_loader import ExcelLoader
 from utils.helper_func import Helpers
 
 env.read_envfile('.env')
+# Set the path to the Tesseract executable
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Inicijaliziraj Flask i omogući CORS
 app = Flask(__name__)
@@ -88,6 +94,8 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'username' not in session:
             flash("Please log in to access this page.", "danger")
+            if request.endpoint != 'get_status':  # Exclude '/get_status' route
+                session['next_url'] = request.url
             return redirect(url_for('login'))
         return f(*args, **kwargs)
 
@@ -111,7 +119,15 @@ def logout():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        return authenticate()
+        # Authentication logic (make sure it sets 'username' in session upon success)
+        authenticated = authenticate()
+        if authenticated:
+            next_url = session.pop('next_url', None)  # Get the stored URL
+            if next_url:
+                return redirect(next_url)  # Redirect to the originally requested URL
+            else:
+                return redirect(url_for('index'))  # Redirect to some default page
+
     return render_template('login.html')
 
 
@@ -556,6 +572,47 @@ def update_products():
         data = helpers.edit_data(df_orders_all, df_products_all, df_records)
         _ = airtable_data.update_products(data)
         return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
+
+
+@app.route('/frame', methods=['GET'])
+def frame():
+    return render_template('image_recognition.html')
+
+
+@app.route('/process_frame', methods=['POST'])
+def process_frame():
+    if 'frame' in request.files:
+        frame = request.files['frame'].read()
+        image = Image.open(io.BytesIO(frame))
+
+        # Perform OCR and get bounding boxes
+        data = pytesseract.image_to_data(image)
+        lines = data.split('\n')
+        boxes = []
+        for i, line in enumerate(lines):
+            elements = line.split('\t')
+            if len(elements) >= 12:
+                # Check if the current line contains "Narudzba"
+                if "Narudzba" in elements[11]:
+                    # Initialize the box coordinates with the current line's coordinates
+                    x, y, width, height = int(elements[6]), int(elements[7]), int(elements[8]), int(elements[9])
+
+                    # Check the next two lines for ":" and the number
+                    for j in range(1, 3):
+                        if i + j < len(lines):
+                            number_elements = lines[i + j].split('\t')
+                            if len(number_elements) >= 12:
+                                # Update width and height based on these elements
+                                width = max(width, int(number_elements[6]) + int(number_elements[8]) - x)
+                                height = max(height, int(number_elements[7]) + int(number_elements[9]) - y)
+
+                    boxes.append({"x": x, "y": y, "width": width, "height": height})
+
+        return jsonify(boxes)
+
+    return jsonify({"message": "No frame received"})
+
+
 
 
 if __name__ == "__main__":

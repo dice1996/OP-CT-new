@@ -4,3 +4,5 @@ requests
 envparse
 pdf417gen
 pyairtable
+pytesseract
+Pillow
