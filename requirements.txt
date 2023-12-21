@@ -1,4 +1,6 @@
 flask
+flask_cors
+flask_weasyprint
 pandas
 requests
 envparse
@@ -6,5 +8,8 @@ pdf417gen
 pyairtable
 pytesseract
 Pillow
+<<<<<<< HEAD
 flask_cors
 flask_weasyprint
+=======
+>>>>>>> 53cc7115e7771b60dbef078b683a6321869148ce
