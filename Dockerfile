@@ -1,8 +1,11 @@
 # Use Ubuntu as the base image
 FROM ubuntu:20.04
 
-# Update the package list and install Python
-RUN apt-get update && apt-get install -y python3
+# Avoid prompts from apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update the package list, install Python 3 and pip
+RUN apt-get update && apt-get install -y python3 python3-pip
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
