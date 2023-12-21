@@ -1,30 +1,20 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# Use Ubuntu as the base image
+FROM ubuntu:20.04
+
+# Update the package list and install Python
+RUN apt-get update && apt-get install -y python3
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libgirepository1.0-dev \
-    gcc \
-    libcairo2-dev \
-    pkg-config \
-    python3-dev \
-    gir1.2-gtk-3.0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy the current directory contents into the container at /usr/src/app
+# Copy the current directory contents into the container
 COPY . .
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Make your application's port available
+# Expose the port your application uses
 EXPOSE 1234
 
-# Define environment variable
-ENV FLASK_APP=app.py
-
-# Run app.py when the container launches
-CMD ["flask", "run", "--host=0.0.0.0", "--port=1234"]
+# Define the command to run your application
+CMD ["python3", "app.py"]
