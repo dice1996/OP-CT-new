@@ -558,8 +558,6 @@ def update_products():
     df_orders_all['Broj'] = df_orders_all['Broj'].astype(int)
     df_orders_all['EAN'] = pd.to_numeric(df_orders_all['EAN'], errors='coerce')
     df_orders_all['Naručena količina'] = df_orders_all['Naručena količina'].astype(int)
-    
-    print(df_orders_all.head)
 
     df_records = airtable_data.get_dataframe_from_view("1. KORAK: Unos narudžbi")
     if df_records is None:
