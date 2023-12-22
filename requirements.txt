@@ -8,5 +8,3 @@ pdf417gen
 pyairtable
 pytesseract
 Pillow
-flask_cors
-flask_weasyprint

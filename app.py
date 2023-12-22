@@ -475,10 +475,10 @@ def get_airtable_records():
     if df_records is None:
         return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
     else:
-        data = helpers.edit_data(df_orders_all, df_products_all, df_records)
+        data = helpers.edit_data(df_orders_all, df_records)
         for index, row in data.iterrows():
             # Assuming 'Sifra' is now a list of product codes
-            common_location_info = helpers.get_common_location_for_products(df, row['Sifra'], location_columns)
+            common_location_info = helpers.get_common_location_for_products(df, row['EAN'], row["Naručena količina"], location_columns)
             if common_location_info:
                 location, max_min_quantity = common_location_info
                 data.at[index, 'location'] = location
@@ -512,41 +512,37 @@ def upload_files():
         "008 CENTAR TEHNIKE 008 BELI MANASTIR0700": "Beli Manastir",
         "009 CENTAR TEHNIKE 009 VUKOVAR0700": "Vukovar"
     }
+
     if request.method == 'GET':
         return render_template("upload.html", location_mapping=location_mapping)
     else:
-        # Check if the post request has the file part
-        if 'file1' not in request.files or 'file2' not in request.files:
+        # Check if the post request has the file part for orders
+        if 'file1' not in request.files:
             return jsonify({"error": "No file part in the request"}), 400
 
         file1 = request.files['file1']
-        file2 = request.files['file2']
 
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file1.filename == '' or file2.filename == '':
+        # If the user does not select a file, the browser submits an empty file without a filename.
+        if file1.filename == '':
             return jsonify({"error": "No selected file"}), 400
 
-        if file1 and file2:
-
+        if file1:
+            # Save the file to a temporary directory
             if not os.path.exists('temp_directory'):
                 os.makedirs('temp_directory')
 
-            orders_file = os.path.join('temp_directory', 'orders.txt')
-            products_file = os.path.join('temp_directory', 'products.txt')
+            orders_file_path = os.path.join('temp_directory', 'orders.csv')
+            file1.save(orders_file_path)
 
-            file1.save(orders_file)
-            file2.save(products_file)
-
-            global df_orders_all, df_products_all
-            df_orders_all = pd.read_csv(orders_file, sep=',')
-            df_orders_all = df_orders_all.drop(index=0).reset_index(drop=True)
+            # Read the CSV file into a DataFrame
+            global df_orders_all
+            df_orders_all = pd.read_csv(orders_file_path, sep=',', skiprows=[1])
+            #df_orders_all = df_orders_all.drop(index=1).reset_index(drop=True)
             df_orders_all['Broj'] = df_orders_all['Broj'].astype(int)
+            df_orders_all['EAN'] = pd.to_numeric(df_orders_all['EAN'], errors='coerce')
+            df_orders_all['Naručena količina'] = df_orders_all['Naručena količina'].astype(int)
 
-            df_products_all = pd.read_csv(products_file, sep=',')
-            df_products_all = df_products_all.drop(index=0).reset_index(drop=True)
-
-            return jsonify({"message": "Files successfully uploaded"}), 200
+            return jsonify({"message": "File successfully uploaded"}), 200
 
         return jsonify({"error": "Unknown error occurred"}), 500
 
@@ -554,22 +550,22 @@ def upload_files():
 @app.route('/orders/update_products', methods=['GET'])
 @login_required
 def update_products():
-    orders_file = os.path.join('temp_directory', 'orders.txt')
-    products_file = os.path.join('temp_directory', 'products.txt')
+    orders_file = os.path.join('temp_directory', 'orders.csv')
 
-    global df_orders_all, df_products_all
-    df_orders_all = pd.read_csv(orders_file, sep=',')
-    df_orders_all = df_orders_all.drop(index=0).reset_index(drop=True)
+    global df_orders_all
+    df_orders_all = pd.read_csv(orders_file, sep=',', skiprows=[1])
+    #df_orders_all = df_orders_all.drop(index=1).reset_index(drop=True)
     df_orders_all['Broj'] = df_orders_all['Broj'].astype(int)
-
-    df_products_all = pd.read_csv(products_file, sep=',')
-    df_products_all = df_products_all.drop(index=0).reset_index(drop=True)
+    df_orders_all['EAN'] = pd.to_numeric(df_orders_all['EAN'], errors='coerce')
+    df_orders_all['Naručena količina'] = df_orders_all['Naručena količina'].astype(int)
+    
+    print(df_orders_all.head)
 
     df_records = airtable_data.get_dataframe_from_view("1. KORAK: Unos narudžbi")
     if df_records is None:
         return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
     else:
-        data = helpers.edit_data(df_orders_all, df_products_all, df_records)
+        data = helpers.edit_data(df_orders_all, df_records)
         _ = airtable_data.update_products(data)
         return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
 

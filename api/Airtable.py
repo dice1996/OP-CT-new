@@ -34,7 +34,7 @@ class AirtableData:
             location = [row['location']] if pd.notnull(row['location']) and row['location'] != 'None' else []
             note = None if pd.isna(row.get('note', None)) else row.get('note', None)
 
-            product_titles = row['Naslov_Sifra']
+            product_titles = row['Naslov_EAN']
             try:
                 products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
             except:
@@ -42,15 +42,19 @@ class AirtableData:
 
             if not location:
                 status = "Nema stanja"
+                email = None
 
             data1 = {
                 'Email': email,
                 'Mjesto_slanja': location,
                 'Zadnji': note,
                 'Status': status,
-                'Proizvodi': products_formatted
+                'Proizvodi': products_formatted,
+                'Bonus zaštita': row['Bonus_Zaštita'] if pd.notnull(row['Bonus_Zaštita']) else None
                 # Add other fields you want to update
             }
+            
+            print(data1)
             try:
                 self.table.update(record_id, data1)
                 # print(f"Record {record_id} updated successfully.")
@@ -63,7 +67,7 @@ class AirtableData:
 
             # Replace NaN values with None
             email = row['Email'] if pd.notnull(row['Email']) else None
-            product_titles = row['Naslov_Sifra']
+            product_titles = row['Naslov_EAN']
             try:
                 products_formatted = '\n'.join([f"- {title.upper()}" for title in product_titles])
             except:
@@ -71,7 +75,8 @@ class AirtableData:
 
             data1 = {
                 'Email': email,
-                'Proizvodi': products_formatted
+                'Proizvodi': products_formatted,
+                'Bonus zaštita': row['Bonus_Zaštita'] if pd.notnull(row['Bonus_Zaštita']) else None
                 # Add other fields you want to update
             }
             try:
