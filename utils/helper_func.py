@@ -36,9 +36,9 @@ class Helpers:
 
         # Combine product title and EAN into a single string for each product
         df_grouped['Naslov_EAN'] = df_grouped.apply(
-            lambda row: ["{} | {}".format(title, str(int(ean)))
+            lambda row: ["{} | {}".format(title, int(ean) if pd.notna(ean) else 'Fali EAN')
                          for title, ean in zip(row['Naslov'], row['EAN'])
-                         if not re.search(bonus_pattern, title)],axis=1)
+                         if not re.search(pattern, title)], axis=1)
 
         # Flag and list the types of 'Bonus Zaštita'        
         df_grouped['Bonus_Zaštita'] = df_grouped.apply(
@@ -65,13 +65,14 @@ class Helpers:
 
     @staticmethod
     def get_common_location_for_products(df, ean_codes, ordered_quantities, location_columns):
-        # Initialize minimum quantities for each location
-        location_min_quantities = {location: float('inf') for location in location_columns}
-
-        # Store rows corresponding to the products for potential stock update
-        product_rows = []
+        # Initialize dictionaries to track locations that can fulfill the entire order
+        suitable_locations = {location: 0 for location in location_columns}
+        lowest_stock_at_location = {location: float('inf') for location in location_columns}
 
         for ean_code, quantity_required in zip(ean_codes, ordered_quantities):
+            if pd.isna(ean_code):
+                print("Encountered NaN EAN code")
+                return None, None
             product_query = re.escape(str(int(ean_code)))
             filtered_df = df[
                 df['Barcode1500'].astype(str).str.contains(product_query, na=False)
@@ -79,35 +80,39 @@ class Helpers:
 
             if filtered_df.empty:
                 print(f"No product found for EAN '{ean_code}'")
-                return None
+                return None, None
 
-            # Store the row for later stock update
-            product_rows.append((filtered_df.iloc[0], quantity_required))
-            
-            # Inside the loop for each product
-            for location in location_min_quantities.keys():
+            for location in location_columns:
                 available_quantity = float(filtered_df.iloc[0][location].replace('\t', '').replace(',', '.'))
                 if available_quantity >= quantity_required:
-                    location_min_quantities[location] = min(location_min_quantities[location], available_quantity)
-        
-        # Finding the best location
-        best_location = None
-        max_min_quantity = -1
-        for location, quantity in location_min_quantities.items():
-            if quantity != float('inf') and quantity > max_min_quantity:
-                max_min_quantity = quantity
-                best_location = location
-        
-        if max_min_quantity == float('inf') or max_min_quantity <= 0:
-            return None
+                    suitable_locations[location] += available_quantity
+                    lowest_stock_at_location[location] = min(lowest_stock_at_location[location], available_quantity)
+                else:
+                    # Mark location as unsuitable by setting its lowest stock to zero
+                    lowest_stock_at_location[location] = 0
 
-        # Decrement stock for the chosen location based on ordered quantities
-        for product_row, quantity_required in product_rows:
-            current_quantity = float(product_row[best_location].replace('\t', '').replace(',', '.'))
-            updated_quantity = current_quantity - quantity_required
-            df.loc[product_row.name, best_location] = str(updated_quantity).replace('.', ',')
+        # Filter out locations that cannot fulfill the entire order or have any product with zero stock
+        suitable_locations = {loc: stock for loc, stock in suitable_locations.items() if lowest_stock_at_location[loc] > 0}
 
-        return best_location.strip(), max_min_quantity
+        if not suitable_locations:
+            print("No single location can fulfill the entire order.")
+            return None, None
+
+        # Find the location with the highest stock among suitable ones
+        best_location = max(suitable_locations, key=suitable_locations.get)
+        min_max_quantity = lowest_stock_at_location[best_location]
+
+        # Decrement stock for the chosen location
+        for ean_code, quantity_required in zip(ean_codes, ordered_quantities):
+            product_query = re.escape(str(int(ean_code)))
+            row_index = df[df['Barcode1500'].astype(str).str.contains(product_query, na=False)].index[0]
+            updated_quantity = max(0, float(df.at[row_index, best_location].replace('\t', '').replace(',', '.')) - quantity_required)
+            df.at[row_index, best_location] = str(updated_quantity).replace('.', ',')
+
+        return best_location.strip(), min_max_quantity
+
+
+
 
     @staticmethod
     def map_locations(data):
