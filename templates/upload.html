@@ -115,7 +115,7 @@
         $(document).ready(function () {
             $('#uploadButton').click(function () {
                 // Disable the button and change its text
-                $(this).prop('disabled', true).text('Učitavanje...');
+                $(this).prop('disabled', true).text('Učitavanje i sortiranje...');
 
                 var formData = new FormData($('#fileUploadForm')[0]);
 
@@ -162,7 +162,7 @@
 
                 // Redirect to the new URL with the selected locations as a query string
                 window.location.href = 'http://ceky.ddns.net:1234/api/airtable_records?' + queryString;
-                $(this).prop('disabled', false).text('Sortiraj...');
+                $(this).prop('disabled', false).text('Sortiraj');
             });
         });
     </script>
