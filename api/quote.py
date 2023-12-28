@@ -4,7 +4,7 @@ from datetime import datetime as dt
 
 
 class Quote:
-    def __init__(self, form_data, user, row_id=None):
+    def __init__(self, form_data, user, row_id=None, pt=None):
         self.customer = {
             'name': form_data.get('customer_name'),
             'oib': form_data.get('customer_oib'),
@@ -27,6 +27,8 @@ class Quote:
         self.date = dt.now().strftime("%d.%m.%Y")
         self.user = user
         self.row_id = row_id
+        if pt is not None:
+            self.pt = pt
 
     def save_to_db(self):
         conn = sqlite3.connect('quotes.db')
@@ -51,7 +53,7 @@ class Quote:
         conn.close()
 
     def to_dict(self):
-        return {
+        data = {
             'customer': self.customer,
             'products': self.products,
             'napomena': self.napomena,
@@ -59,12 +61,20 @@ class Quote:
             'operater': self.user
         }
 
+        if hasattr(self, 'pt'):
+            data['pt'] = self.pt
+
+        return data
+
     @staticmethod
-    def format_offer_id(year, month, offer_id):
+    def format_offer_id(year, month, offer_id, pt=None):
         year_str = str(year)[2:]  # Take the last two digits of the year
         month_str = str(month).zfill(2)  # Pad the month with zeros if necessary
         offer_id_str = str(offer_id).zfill(4)  # Pad the offer ID with zeros to have a length of 4
-        return f"{year_str}{month_str}-WEB-{offer_id_str}", f"{year_str}{month_str}-{offer_id_str}"
+        if pt is None:
+            return f"{year_str}{month_str}-WEB-{offer_id_str}", f"{year_str}{month_str}-{offer_id_str}"
+        else:
+            return f"{year_str}{month_str}-PT-{offer_id_str}", f"{year_str}{month_str}-{offer_id_str}"
 
     @staticmethod
     def get_offers(year=None, month=None):
@@ -106,9 +116,10 @@ class Quote:
             date_parts = offer_data['datum'].split('.')
             year = int(date_parts[2])
             month = int(date_parts[1])
-
-            # Format the offer ID
-            formatted_offer_id, _ = Quote.format_offer_id(year, month, offer_id)
+            try:
+                formatted_offer_id, _ = Quote.format_offer_id(year, month, offer_id, pt=offer_data['pt'])
+            except:
+                formatted_offer_id, _ = Quote.format_offer_id(year, month, offer_id)
 
             total_amount = 0
             for product in offer_data['products']:
@@ -120,12 +131,18 @@ class Quote:
                 total_amount += discounted_price * quantity
 
             rounded_total_amount = "{:.2f}".format(round(total_amount, 2))  # Format to 2 decimal places
-            offers.append({
+            offer = {
                 'row_id': row_id,
                 'id': formatted_offer_id,
                 'customer_name': offer_data['customer']['name'].upper(),
                 'total_amount': rounded_total_amount
-            })
+            }
+
+            # Append 'pt' to offer if it exists
+            if 'pt' in offer_data:
+                offer['pt'] = offer_data['pt']
+
+            offers.append(offer)
 
         return offers
 

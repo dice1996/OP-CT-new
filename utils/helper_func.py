@@ -1,6 +1,7 @@
 import re
 
 import pandas as pd
+import hashlib
 
 
 class Helpers:
@@ -8,11 +9,14 @@ class Helpers:
         pass
 
     @staticmethod
-    def format_offer_id(year, month, offer_id):
+    def format_offer_id(year, month, offer_id, pt=None):
         year_str = str(year)[2:]  # Take the last two digits of the year
         month_str = str(month).zfill(2)  # Pad the month with zeros if necessary
         offer_id_str = str(offer_id).zfill(4)  # Pad the offer ID with zeros to have a length of 4
-        return f"{year_str}{month_str}-WEB-{offer_id_str}", f"{year_str}{month_str}-{offer_id_str}"
+        if pt is None:
+            return f"{year_str}{month_str}-WEB-{offer_id_str}", f"{year_str}{month_str}-{offer_id_str}"
+        else:
+            return f"{year_str}{month_str}-PT-{offer_id_str}", f"{year_str}{month_str}-{offer_id_str}"
 
     @staticmethod
     def edit_data(df_orders_all, df_records):
@@ -92,7 +96,8 @@ class Helpers:
                     lowest_stock_at_location[location] = 0
 
         # Filter out locations that cannot fulfill the entire order or have any product with zero stock
-        suitable_locations = {loc: stock for loc, stock in suitable_locations.items() if lowest_stock_at_location[loc] > 0}
+        suitable_locations = {loc: stock for loc, stock in suitable_locations.items() if
+                              lowest_stock_at_location[loc] > 0}
 
         if not suitable_locations:
             print("No single location can fulfill the entire order.")
@@ -106,13 +111,11 @@ class Helpers:
         for ean_code, quantity_required in zip(ean_codes, ordered_quantities):
             product_query = re.escape(str(int(ean_code)))
             row_index = df[df['Barcode1500'].astype(str).str.contains(product_query, na=False)].index[0]
-            updated_quantity = max(0, float(df.at[row_index, best_location].replace('\t', '').replace(',', '.')) - quantity_required)
+            updated_quantity = max(0, float(
+                df.at[row_index, best_location].replace('\t', '').replace(',', '.')) - quantity_required)
             df.at[row_index, best_location] = str(updated_quantity).replace('.', ',')
 
         return best_location.strip(), min_max_quantity
-
-
-
 
     @staticmethod
     def map_locations(data):
@@ -129,3 +132,8 @@ class Helpers:
         }
         data['location'] = data['location'].map(location_mapping)
         return data
+
+    @staticmethod
+    def create_digest(merchant_key, authenticity_token, timestamp, fullpath, body):
+        hash_string = f"{merchant_key}{timestamp}{authenticity_token}{fullpath}{body}"
+        return hashlib.sha512(hash_string.encode()).hexdigest()

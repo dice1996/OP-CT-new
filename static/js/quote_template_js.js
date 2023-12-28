@@ -118,12 +118,17 @@ function addShippingCost() {
 $(document).ready(function () {
     $("form").on("submit", function (event) {
         event.preventDefault();
-        var createOfferButton = $("#createOfferButton");
 
-        createOfferButton.prop("disabled", true).text("U obradi...");
+        var clickedButtonId = $(document.activeElement).attr('id');
+        var createOfferButton = $("#" + clickedButtonId);
+
+        createOfferButton.prop("disabled", true).text("U OBRADI...");
+
+        // Determine the URL based on the button clicked
+        var url = clickedButtonId === 'createOfferButton' ? '/create_quote' : '/create_quote_PT';
 
         $.ajax({
-            url: '/create_quote',
+            url: url,
             method: 'POST',
             data: $(this).serialize(),
             success: function (response) {
@@ -143,12 +148,12 @@ $(document).ready(function () {
                 pdf_link.click();
                 document.body.removeChild(pdf_link);
 
-                createOfferButton.prop("disabled", false).text("Kreiraj ponudu");
-                refreshOffersTable()
+                createOfferButton.prop("disabled", false).text(clickedButtonId === "createOfferButton" ? "CT PONUDA" : "PT PONUDA");
+                refreshOffersTable();
 
             },
             error: function (error) {
-                createOfferButton.prop("disabled", false).text("Kreiraj ponudu");
+                createOfferButton.prop("disabled", false).text(clickedButtonId === "createOfferButton" ? "CT PONUDA" : "PT PONUDA");
 
                 // Handle error
                 console.log("Error:", error);
@@ -158,6 +163,13 @@ $(document).ready(function () {
 });
 
 $(document).ready(function () {
+    // Event handler for opening the payment modal
+    $(".offer-table").on("click", "button.payment-button", function () {
+        // Open the modal
+        console.log("Button load pressed")
+        $("#paymentModal").modal('show');
+    });
+
     // Delete row button
     $(".offer-table").on("click", "button.delete-button", function () {
         var row = $(this).closest("tr");
@@ -316,12 +328,13 @@ function refreshOffersTable() {
                 response.forEach(offer => {
                     const row = `<tr data-row-id="${offer.row_id}">
                         <td>${offer.customer_name}</td>
-                        <td style="width: 17%;">${offer.id}</td>
-                        <td>${offer.total_amount}€</td>
-                        <td style="width: 18%;">
+                        <td style="width: 22%;">${offer.id}</td>
+                        <td style="width: 15%;">${offer.total_amount}€</td>
+                        <td style="width: 30%;">
                             <button type="button" class="btn btn-primary load-button" title="Učitaj"><i class="fa fa-folder-open"></i></button>
                             <button type="button" class="btn btn-success download-button" title="Preuzmi"><i class="fa fa-download"></i></button>
                             <button type="button" class="btn btn-danger delete-button" title="Obriši"><i class="fa fa-trash"></i></button>
+                            <!--<button type="button" class="btn btn-warning payment-button" title="Link za plaćanje"><i class="fa fa-credit-card-alt"></i></button>-->
                         </td>
                     </tr>`;
                     tableBody.append(row);
@@ -382,4 +395,3 @@ function moveDataTablesControls() {
 window.addEventListener('load', function () {
     document.body.style.opacity = '1';
 });
-

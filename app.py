@@ -1,14 +1,13 @@
-import io
 import os
-import re
 import sqlite3
+import time
 from base64 import b64encode
 from datetime import datetime, timedelta
 from functools import wraps
 
 import pandas as pd
 import pytesseract
-from PIL import Image
+import requests
 from envparse import env
 from flask import Flask, jsonify, request, render_template, flash, session, redirect, url_for, make_response
 from flask_cors import CORS
@@ -151,12 +150,6 @@ def reload_data_no_auth():
 @login_required
 def index():
     return render_template("zalihe.html", active2="", active1="active", active3="")
-
-
-@app.route('/messages', methods=['GET'])
-@login_required
-def mess():
-    return render_template("mess.html", active2="", active1="active", active3="")
 
 
 @app.route('/quote', methods=['GET'])
@@ -312,6 +305,10 @@ def download_pdf(quote_id):
             'napomena': data_dict.get('napomena')
         }
 
+        pt_data = data_dict.get('pt')
+        if pt_data:
+            additional_data['pt'] = pt_data
+
         # Calculate the total amount with tax
         total_amount_with_tax = sum(float(product['price']) * float(product['quantity']) for product in products_data)
 
@@ -350,29 +347,48 @@ def download_pdf(quote_id):
             print("Invalid date format")
             year, month = datetime.now().year, datetime.now().month
 
-        # Now you can use 'year' and 'month' in your function
-        offer_id, offer_id_str = helpers.format_offer_id(year, month, quote_id)
-
-        data = [
-            "HRVHUB30",
-            "EUR",
-            f"{formatted_eurocents}",
-            f"{customer_data['name'].strip().upper()}",
-            "",  # ulica
-            "",  # zip grad (31000 OSIJEK)
-            "CENTAR TEHNIKE d.o.o za trgovinu",
-            "ŽUPANIJSKA 31",
-            "31000 OSIJEK",
-            "HR3323400091110533041",
-            "HR00",
-            f"{offer_id_str}",
-            "OTHR",
-            f"PLAĆANJE PO PONUDI {offer_id}"
-        ]
+        if pt_data:
+            offer_id, offer_id_str = helpers.format_offer_id(year, month, quote_id, pt=1)
+            data = [
+                "HRVHUB30",
+                "EUR",
+                f"{formatted_eurocents}",
+                f"{customer_data['name'].strip().upper()}",
+                "",  # ulica
+                "",  # zip grad (31000 OSIJEK)
+                "PREMIUM TEHNIKA d.o.o.",
+                "ŽUPANIJSKA 29",
+                "31000 OSIJEK",
+                "HR4024020061101044465",
+                "HR00",
+                f"{offer_id_str}",
+                "OTHR",
+                f"PLAĆANJE PO PONUDI {offer_id}"
+            ]
+            template = 'quote_template_PT.html'
+        else:
+            offer_id, offer_id_str = helpers.format_offer_id(year, month, quote_id)
+            data = [
+                "HRVHUB30",
+                "EUR",
+                f"{formatted_eurocents}",
+                f"{customer_data['name'].strip().upper()}",
+                "",  # ulica
+                "",  # zip grad (31000 OSIJEK)
+                "CENTAR TEHNIKE d.o.o za trgovinu",
+                "ŽUPANIJSKA 31",
+                "31000 OSIJEK",
+                "HR3323400091110533041",
+                "HR00",
+                f"{offer_id_str}",
+                "OTHR",
+                f"PLAĆANJE PO PONUDI {offer_id}"
+            ]
+            template = 'quote_template.html'
 
         img_str = PaymentBarcode(data).generate_barcode()
 
-        rendered = render_template('quote_template.html',
+        rendered = render_template(template,
                                    offer_id=offer_id,
                                    offer_id_str=offer_id_str,
                                    img_str=img_str,
@@ -395,6 +411,101 @@ def download_pdf(quote_id):
     except Exception as e:
         print(f"An error occurred: {e}")
         return jsonify({"error": "An error occurred while generating the PDF"}), 500
+
+
+# PREMIUM TEHNIKA
+@app.route('/create_quote_PT', methods=['POST'])
+@login_required
+def create_quote_pt():
+    try:
+        row_id = request.form.get('row_id', None)
+        if row_id == '':
+            row_id = None
+
+        # Save data to the database
+        data_quote = Quote(request.form, session["name"], row_id=row_id, pt=1)
+        data_quote.save_to_db()
+
+        # Convert the saved data to dictionary
+        data_dict = data_quote.to_dict()
+
+        # Fetch data to populate into the HTML template
+        customer_data = data_dict.get('customer')
+        products_data = data_dict.get('products')
+        additional_data = {
+            'datum': data_dict.get('datum'),
+            'operater': data_dict.get('operater'),
+            'napomena': data_dict.get('napomena')
+        }
+
+        # Calculate the total amount with tax
+        total_amount_with_tax = sum(float(product['price']) * float(product['quantity']) for product in products_data)
+
+        # Calculate the discount amount with tax
+        discount_amount_with_tax = sum(
+            float(product['price']) * float(product['quantity']) * float(product['discount']) / 100 for product in
+            products_data if 'discount' in product and product['discount']
+        )
+
+        # Calculate Osnovica by removing 25% tax
+        osnovica = round((total_amount_with_tax - discount_amount_with_tax) / 1.25, 2)
+
+        # Calculate PDV (25% tax amount)
+        pdv = round(total_amount_with_tax - osnovica - discount_amount_with_tax, 2)
+
+        # Calculate Rabat by subtracting 25% tax
+        rabat = round(discount_amount_with_tax, 2)
+
+        # Calculate Iznos (Grand Total)
+        iznos = round(total_amount_with_tax - discount_amount_with_tax, 2)
+
+        # Convert Grand Total to Eurocents
+        eurocents = int(iznos * 100)
+        formatted_eurocents = str(eurocents).rjust(15, '0')
+        print(eurocents / 100)
+
+        offer_id, offer_id_str = helpers.format_offer_id(datetime.now().year, datetime.now().month, data_quote.quote_id,
+                                                         pt=1)
+
+        data = [
+            "HRVHUB30",
+            "EUR",
+            f"{formatted_eurocents}",
+            f"{customer_data['name'].strip().upper()}",
+            "",  # ulica
+            "",  # zip grad (31000 OSIJEK)
+            "PREMIUM TEHNIKA d.o.o.",
+            "ŽUPANIJSKA 29",
+            "31000 OSIJEK",
+            "HR4024020061101044465",
+            "HR00",
+            f"{offer_id_str}",
+            "OTHR",
+            f"PLAĆANJE PO PONUDI {offer_id}"
+        ]
+
+        img_str = PaymentBarcode(data).generate_barcode()
+
+        rendered = render_template('quote_template_PT.html',
+                                   offer_id=offer_id,
+                                   offer_id_str=offer_id_str,
+                                   img_str=img_str,
+                                   customer=customer_data,
+                                   additional=additional_data,
+                                   products=products_data,
+                                   total_amount=osnovica,
+                                   discount_amount=rabat,
+                                   tax_amount=pdv,
+                                   grand_total_amount=iznos)
+
+        # Generate PDF
+        pdf = HTML(string=rendered).write_pdf()
+
+        # Convert PDF to base64
+        pdf_base64 = b64encode(pdf).decode("utf-8")
+        return jsonify({"message": "Quote created", "quote_id": offer_id, "pdf_base64": pdf_base64})
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 @app.route('/quote/<int:row_id>', methods=['DELETE'])
@@ -478,7 +589,8 @@ def get_airtable_records():
         data = helpers.edit_data(df_orders_all, df_records)
         for index, row in data.iterrows():
             # Assuming 'Sifra' is now a list of product codes
-            common_location_info = helpers.get_common_location_for_products(df, row['EAN'], row["Naručena količina"], location_columns)
+            common_location_info = helpers.get_common_location_for_products(df, row['EAN'], row["Naručena količina"],
+                                                                            location_columns)
             if common_location_info:
                 location, max_min_quantity = common_location_info
                 data.at[index, 'location'] = location
@@ -537,7 +649,7 @@ def upload_files():
             # Read the CSV file into a DataFrame
             global df_orders_all
             df_orders_all = pd.read_csv(orders_file_path, sep=',', skiprows=[1])
-            #df_orders_all = df_orders_all.drop(index=1).reset_index(drop=True)
+            # df_orders_all = df_orders_all.drop(index=1).reset_index(drop=True)
             df_orders_all['Broj'] = df_orders_all['Broj'].astype(int)
             df_orders_all['EAN'] = pd.to_numeric(df_orders_all['EAN'], errors='coerce')
             df_orders_all['Naručena količina'] = df_orders_all['Naručena količina'].astype(int)
@@ -554,7 +666,7 @@ def update_products():
 
     global df_orders_all
     df_orders_all = pd.read_csv(orders_file, sep=',', skiprows=[1])
-    #df_orders_all = df_orders_all.drop(index=1).reset_index(drop=True)
+    # df_orders_all = df_orders_all.drop(index=1).reset_index(drop=True)
     df_orders_all['Broj'] = df_orders_all['Broj'].astype(int)
     df_orders_all['EAN'] = pd.to_numeric(df_orders_all['EAN'], errors='coerce')
     df_orders_all['Naručena količina'] = df_orders_all['Naručena količina'].astype(int)
@@ -568,45 +680,30 @@ def update_products():
         return redirect(location="https://airtable.com/appGtpGXi9oS3Yohl/pagh2j3e1KvNVgCcj")
 
 
-@app.route('/frame', methods=['GET'])
-def frame():
-    return render_template('image_recognition.html')
+@app.route('/create_payment_link', methods=['POST'])
+def create_payment_link():
+    data = request.json
+    print(data)
 
+    # Retrieve environment variables
+    merchant_key = env.str('MERCHANT_KEY')
+    authenticity_token = env.str('AUTHENTICITY_TOKEN')
+    timestamp = int(time.time())
+    fullpath = '/v2/terminal-entry/create-or-update'
+    body = data
+    digest = helpers.create_digest(merchant_key, authenticity_token, timestamp, fullpath, body)
 
-@app.route('/process_frame', methods=['POST'])
-def process_frame():
-    if 'frame' in request.files:
-        frame = request.files['frame'].read()
-        image = Image.open(io.BytesIO(frame))
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': f'WP3-v2.1 {authenticity_token} {timestamp} {digest}'
+    }
 
-        # Perform OCR and get bounding boxes
-        data = pytesseract.image_to_data(image)
-        lines = data.split('\n')
-        boxes = []
-        for i, line in enumerate(lines):
-            elements = line.split('\t')
-            if len(elements) >= 12:
-                # Check if the current line contains "Narudzba"
-                if "Narudzba" in elements[11]:
-                    # Initialize the box coordinates with the current line's coordinates
-                    x, y, width, height = int(elements[6]), int(elements[7]), int(elements[8]), int(elements[9])
+    print(headers)
 
-                    # Check the next two lines for ":" and the number
-                    for j in range(1, 3):
-                        if i + j < len(lines):
-                            number_elements = lines[i + j].split('\t')
-                            if len(number_elements) >= 12:
-                                # Update width and height based on these elements
-                                width = max(width, int(number_elements[6]) + int(number_elements[8]) - x)
-                                height = max(height, int(number_elements[7]) + int(number_elements[9]) - y)
+    response = requests.post('https://ipg.monri.com' + fullpath, headers=headers)
 
-                    boxes.append({"x": x, "y": y, "width": width, "height": height})
-
-        return jsonify(boxes)
-
-    return jsonify({"message": "No frame received"})
-
-
+    return response.json()
 
 
 if __name__ == "__main__":

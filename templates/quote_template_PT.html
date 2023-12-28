@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Premium Tehnika - Ponuda {{ offer_id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles to fit A4 */
+        .container {
+            max-width: 800px; /* Adjust based on your needs */
+            margin: auto;
+            padding: 10px;
+            page-break-inside: auto;
+        }
+
+        .row {
+            page-break-before: auto;
+            page-break-after: auto;
+        }
+
+        h3, h6 {
+            font-size: 14px; /* Adjust based on your needs */
+        }
+
+        h5 {
+            font-size: 18px;
+        }
+
+        p {
+            font-size: 13px; /* Adjust based on your needs */
+        }
+
+        .small-font {
+            font-size: 12px; /* You can adjust this value */
+        }
+
+        .label-font {
+            font-size: 14px; /* You can adjust this value */
+        }
+
+        .no-space {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Calibri", sans-serif;
+        }
+
+        /* Print media query */
+        @media print {
+            body, .container {
+                /* Set your margins here; example: */
+                margin: -7mm -2mm -10mm -1mm !important; /* top right bottom left */
+                page-break-inside: auto;
+            }
+
+            .row {
+                page-break-before: auto;
+                page-break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tr {
+                page-break-inside: avoid;
+            }
+
+            tbody {
+                page-break-inside: auto;
+            }
+
+            tfoot {
+                display: table-row-group;
+            }
+        }
+    </style>
+</head>
+<body>
+<br>
+<div class="row">
+    <div class="container" style="margin: auto">
+        <!-- Header Section -->
+        <div class="d-flex align-items-center" style="margin-bottom: 0px; padding-bottom: 0px;">
+            <div class="flex-grow-1">
+                <img src="https://www.premium-tehnika.hr/media/images/logo3.svg" alt="Company Logo" style="width: 210px;">
+            </div>
+            <div class="text-end">
+                <h5>Ponuda: <strong>{{ offer_id }}</strong></h5>
+                <h6>Datum: {{ additional.datum }}</h6>
+            </div>
+        </div>
+    <br>
+        <div class="row">
+            <hr>
+        </div>
+        <div class="row" style="margin: 0; padding: 0;">
+            <!-- Company and Customer Details on the same row -->
+            <div class="d-flex justify-content-between w-100">
+                <!-- Customer Details -->
+                <div class="row">
+                    <h3 style="margin-left: 0; padding-left: 10px;"><strong>Ponuda za:</strong></h3>
+                    <table class="table table-borderless" style="margin-left: 10px;">
+                        <tbody>
+                        <tr style="margin: 0; padding: 0;">
+                            <td class="label-font" style="margin: 0; padding: 0;"><strong>Naziv:</strong></td>
+                            <td class="small-font" style="margin: 0; padding: 0;">{{ customer.name }}</td>
+                        </tr>
+                        {% if customer.oib %}
+                            <tr style="margin: 0; padding: 0;">
+                                <td class="label-font" style="margin: 0; padding: 0;"><strong>OIB:</strong></td>
+                                <td class="small-font" style="margin: 0; padding: 0;">{{ customer.oib }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if customer.address %}
+                            <tr style="margin: 0; padding: 0;">
+                                <td class="label-font" style="margin: 0; padding: 0;"><strong>Adresa:</strong></td>
+                                <td class="small-font" style="margin: 0; padding: 0;">{{ customer.address }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if customer.phone %}
+                            <tr style="margin: 0; padding: 0;">
+                                <td class="label-font" style="margin: 0; padding: 0;"><strong>Telefon:</strong></td>
+                                <td class="small-font" style="margin: 0; padding: 0;">{{ customer.phone }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if customer.email %}
+                            <tr style="margin: 0; padding: 0;">
+                                <td class="label-font" style="margin: 0; padding: 0;"><strong>Email:</strong></td>
+                                <td class="small-font" style="margin: 0; padding: 0;">{{ customer.email }}</td>
+                            </tr>
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Company Details -->
+                <div>
+                    <h3><strong>PREMIUM TEHNIKA d.o.o.</strong></h3>
+                    <p class="no-space">Županijska 29, 31000 OSIJEK</p>
+                    <p class="no-space"><strong>OIB:</strong> 84223950706</p>
+                    <p class="no-space"><strong>IBAN:</strong> HR4024020061101044465</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <hr>
+        </div>
+        <div class="col-md-12">
+            <h5><strong>Proizvodi</strong></h5>
+            <table class="table table-bordered">
+                <thead class="label-font">
+                <tr>
+                    <th style="text-align: center">Šifra</th>
+                    <th>Naziv</th>
+                    <th style="text-align: center; text-anchor: start;">Kol.</th>
+                    <th style="text-align: center;">Cijena
+                        <div class="small-font">(s PDV-om)</div>
+                    </th>
+                    <th style="text-align: center">Rabat (%)</th>
+                    <th style="text-align: center">Ukupno</th>
+                </tr>
+                </thead>
+                <tbody class="small-font">
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.product_id }}</td>
+                        <td>{{ product.product_name }}<br><small>{{ product.note }}</small></td>
+                        <td style="text-align: center;">{{ product.quantity }}</td>
+                        <td style="text-align: center;">€{{ "%.2f"|format(product.price | float) }}</td>
+                        <td style="text-align: center;">{{ "%.2f"|format(product.discount | float) }}</td>
+                        <td style="text-align: center;">
+                            {% if product.discount %}
+                                €{{ "%.2f"|format((product.price | float * product.quantity | float) * (1 - (product.discount |
+                        float / 100))) }}
+                            {% else %}
+                                €{{ "%.2f"|format(product.price | float * product.quantity | float) }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <!-- Footer content -->
+                <tr>
+                    <td colspan="6" style="border-width: 0">
+                        <div class="row">
+                            <div class="d-flex justify-content-between w-100">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <img src="data:image/png;base64,{{ img_str }}" alt="2D Barcode"
+                                                 style="width: 200px;">
+                                            <p class="small-font">*Ponudu je moguće platiti skeniranjem 2D barkoda.</p>
+                                        </div>
+                                        <div class="col-md-3"></div>
+                                    </div>
+                                </div>
+                                <!-- Total, Tax, and Shipping -->
+                                <div class="col-md-6">
+                                    <table class="table-borderless"
+                                           style="border: 0; min-width: 100%">
+                                        <tr>
+                                            <td style="text-align: left; font-size: 12px;"><h3>OSNOVICA:</h3></td>
+                                            <td style="text-align: right; font-size: 12px;"><h3>€{{ "%.2f"|format(total_amount) }}</h3>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left; font-size: 12px;"><h3>RABAT:</h3></td>
+                                            <td style="text-align: right; font-size: 12px;"><h3>
+                                                €{{ "%.2f"|format(discount_amount | float * 0.8) }}</h3></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left; font-size: 12px;"><h3>PDV:</h3></td>
+                                            <td style="text-align: right; font-size: 12px;"><h3>€{{ "%.2f"|format(tax_amount) }}</h3>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left;"><h3 style="font-weight: bold">IZNOS EUR:</h3></td>
+                                            <td style="text-align: right;"><h3 style="font-weight: bold">
+                                                €{{ "%.2f"|format(grand_total_amount) }} </h3></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left; font-size: 12px;">IZNOS HRK:</td>
+                                            <td style="text-align: right; font-size: 12px;">
+                                                {{ "%.2f"|format(grand_total_amount | float * 7.53450 | float) }}kn
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6" style="border-width: 0">
+                        <div class="d-flex justify-content-between w-100">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h3 style="text-underline: #555555">DODATNE NAPOMENE</h3>
+                                    <p><strong>Fiksni tečaj konverzije: 7,53450</strong><br>Valjanost ponude je 7 dana
+                                        od datuma izdavanja. Ponuda je izdana elektronskim
+                                        putem te je valjana bez
+                                        potpisa i pečata.</p>
+                                    {% if additional.napomena %}
+                                        <p><strong>PORUKA: {{ additional.napomena }}</strong></p>
+                                    {% endif %}
+                                    <h3>MODEL PLAĆANJA: <strong>HR 00 {{ offer_id_str }}</strong></h3>
+                                    <h3 class="no-space">IBAN: <strong>HR4024020061101044465</strong></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
